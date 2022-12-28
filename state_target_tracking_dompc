@@ -1,0 +1,176 @@
+import numpy as np
+import do_mpc
+from casadi import *
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib.animation import FuncAnimation, FFMpegWriter, ImageMagickWriter
+
+model_type = 'discrete' # either 'discrete' or 'continuous'
+model = do_mpc.model.Model(model_type)
+
+A = np.array([  [1, 0, 0.5, 0], 
+                [0, 1, 0, 0.5], 
+                [0, 0, 1, 0], 
+                [0, 0, 0, 1] 
+            ])
+
+B = np.array([  [0, 0], 
+                [0, 0], 
+                [0.5, 0], 
+                [0, 0.5] 
+            ])
+
+C = np.array([  [1, 0, 0, 0], 
+                [0, 1, 0, 0] 
+            ])
+
+D = np.zeros((2,2))
+
+dx, du = np.shape(B)
+dy = np.size(C, 0)
+
+# Constraints
+umin = -10
+umax = 10
+delta_u_min = -0.1
+delta_u_max = 0.1
+ymin = -10;
+ymax = 10;
+
+#Tuning matrixes
+Q = np.eye(4)
+Qy = np.eye(dy)
+P = Q*10
+R = 10
+
+# parameters
+x0 = np.array([2, 2, 0, 0, 1, 1])
+target = np.array([5, 5, 0, 0])
+
+# States struct (optimization variables):
+x = model.set_variable(var_type='_x', var_name='x', shape=(dx,1))
+target = model.set_variable('parameter', 'target', shape=(dx,1))
+y = model.set_variable(var_type='_x', var_name='y', shape=(dy,1))
+# Input struct (optimization variables):
+u = model.set_variable(var_type='_u', var_name='u', shape=(du,1))
+# Set expression. These can be used in the cost function, as non-linear constraints
+# or just to monitor another output.
+# model.set_expression(expr_name='cost', expr=sum1(_x**2))
+
+
+x_next = A@x + B@u
+y_next = C@x + D@u
+# target_next = target
+
+model.set_rhs('x', x_next)
+model.set_rhs('y', y_next)
+# model.set_rhs('target', target_next)
+model.setup()
+
+# set up mpc
+mpc = do_mpc.controller.MPC(model)
+
+mpc.scaling['_x', 'x'] = 5
+mpc.scaling['_x', 'y'] = 5
+mpc.scaling['_u', 'u'] = 5
+
+
+# optimizer parameter
+setup_mpc = {
+    'n_horizon': 5,
+    't_step': 0.5,
+    'n_robust': 1,
+    'store_full_solution': True,
+}
+mpc.set_param(**setup_mpc)
+# print(mtimes(mtimes(x.T,Q), x))
+mterm = mtimes(mtimes((x-target).T,Q), (x-target))
+lterm = mtimes(mtimes((x-target).T,P), (x-target))
+print(mterm)
+print(lterm)
+mpc.set_objective(mterm=mterm, lterm=lterm)
+
+mpc.set_rterm(
+    u = R
+)
+
+p_template_mpc = mpc.get_p_template(1)
+p_template_mpc['_p', 0] = np.array([0, 0, 0, 0])
+p_template_mpc_1 = mpc.get_p_template(1)
+p_template_mpc_1['_p', 0] = np.array([5, 5, 0, 0])
+
+def p_fun_mpc(t_now):
+    if t_now <= 15:
+        return p_template_mpc
+    elif(15 < t_now <=30):
+        return p_template_mpc_1
+    return p_template_mpc
+mpc.set_p_fun(p_fun_mpc)
+
+mpc.setup()
+ 
+# Set up simulator
+simulator = do_mpc.simulator.Simulator(model)
+# Instead of supplying a dict with the splat operator (**), as with the optimizer.set_param(),
+# we can also use keywords (and call the method multiple times, if necessary):
+simulator.set_param(t_step = 0.1)
+p_template_sim = simulator.get_p_template()
+def p_fun_mpc(t_now):
+    return p_template_sim
+simulator.set_p_fun(p_fun_mpc)
+simulator.setup()
+estimator = do_mpc.estimator.StateFeedback(model)
+
+# print(x0)
+simulator.x0 = x0
+estimator.x0 = x0
+mpc.x0 = x0
+mpc.set_initial_guess()
+
+# Setting up the Graphic
+# Customizing Matplotlib:
+mpl.rcParams['font.size'] = 18
+mpl.rcParams['lines.linewidth'] = 3
+mpl.rcParams['axes.grid'] = True
+# initializing the graphics module
+mpc_graphics = do_mpc.graphics.Graphics(mpc.data)
+sim_graphics = do_mpc.graphics.Graphics(simulator.data)
+# creating the figure
+# We just want to create the plot and not show it right now. This "inline magic" supresses the output.
+"""
+Setup graphic:
+"""
+
+fig, ax, graphics = do_mpc.graphics.default_plot(mpc.data)
+lines = sim_graphics.result_lines['_x', 'x']
+ax[0].legend(lines,'12',title='x')
+lines = sim_graphics.result_lines['_x', 'y']
+ax[1].legend(lines,'u',title='output')
+lines = sim_graphics.result_lines['_u', 'u']
+ax[2].legend(lines,'y',title='input')
+plt.ion()
+
+"""
+Run MPC main loop:
+"""
+
+for k in range(100):
+    u0 = mpc.make_step(x0)
+    y_next = simulator.make_step(u0)
+    x0 = estimator.make_step(y_next)
+
+    graphics.plot_results(t_ind=k)
+    graphics.plot_predictions(t_ind=k)
+    graphics.reset_axes()
+    plt.show()
+    plt.pause(0.5)
+
+# Animating Results
+def update(t_ind):
+    sim_graphics.plot_results(t_ind)
+    mpc_graphics.plot_predictions(t_ind)
+    mpc_graphics.reset_axes()
+
+anim = FuncAnimation(fig, update, frames=20, repeat=False)
+gif_writer = ImageMagickWriter(fps=3)
+anim.save('anim.gif', writer=gif_writer)
