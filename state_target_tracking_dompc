@@ -49,7 +49,7 @@ target = np.array([5, 5, 0, 0])
 
 # States struct (optimization variables):
 x = model.set_variable(var_type='_x', var_name='x', shape=(dx,1))
-target = model.set_variable('parameter', 'target', shape=(dx,1))
+target = model.set_variable(var_type='_tvp', var_name='target', shape=(dx,1))
 y = model.set_variable(var_type='_x', var_name='y', shape=(dy,1))
 # Input struct (optimization variables):
 u = model.set_variable(var_type='_u', var_name='u', shape=(du,1))
@@ -65,6 +65,7 @@ y_next = C@x + D@u
 model.set_rhs('x', x_next)
 model.set_rhs('y', y_next)
 # model.set_rhs('target', target_next)
+
 model.setup()
 
 # set up mpc
@@ -74,10 +75,10 @@ mpc.scaling['_x', 'x'] = 5
 mpc.scaling['_x', 'y'] = 5
 mpc.scaling['_u', 'u'] = 5
 
-
+Npred = 10;
 # optimizer parameter
 setup_mpc = {
-    'n_horizon': 5,
+    'n_horizon': Npred,
     't_step': 0.5,
     'n_robust': 1,
     'store_full_solution': True,
@@ -94,18 +95,20 @@ mpc.set_rterm(
     u = R
 )
 
-p_template_mpc = mpc.get_p_template(1)
-p_template_mpc['_p', 0] = np.array([0, 0, 0, 0])
-p_template_mpc_1 = mpc.get_p_template(1)
-p_template_mpc_1['_p', 0] = np.array([5, 5, 0, 0])
+tvp_template_mpc = mpc.get_tvp_template()
+print(tvp_template_mpc)
 
-def p_fun_mpc(t_now):
-    if t_now <= 15:
-        return p_template_mpc
-    elif(15 < t_now <=30):
-        return p_template_mpc_1
-    return p_template_mpc
-mpc.set_p_fun(p_fun_mpc)
+def tvp_fun_mpc(t_now):
+    for k in range(Npred+1):
+        temp = t_now + k
+        if temp <= 15:
+            tvp_template_mpc['_tvp', k, 'target'] = np.array([0, 0, 0, 0])
+        elif(15 < temp <=30):
+            tvp_template_mpc['_tvp', k, 'target'] = np.array([5, 5, 0, 0])
+        elif(temp > 30):
+            tvp_template_mpc['_tvp', k, 'target'] = np.array([0, 0, 0, 0])
+    return tvp_template_mpc
+mpc.set_tvp_fun(tvp_fun_mpc)
 
 mpc.setup()
  
@@ -114,10 +117,18 @@ simulator = do_mpc.simulator.Simulator(model)
 # Instead of supplying a dict with the splat operator (**), as with the optimizer.set_param(),
 # we can also use keywords (and call the method multiple times, if necessary):
 simulator.set_param(t_step = 0.1)
-p_template_sim = simulator.get_p_template()
-def p_fun_mpc(t_now):
-    return p_template_sim
-simulator.set_p_fun(p_fun_mpc)
+tvp_template_sim = simulator.get_tvp_template()
+def tvp_fun_sim(t_now):
+    # for k in range(Npred+1):
+    #     temp = t_now + k
+    #     if temp <= 15:
+    #         tvp_template_sim['target', k] = np.array([0, 0, 0, 0])
+    #     elif(15 < temp <=30):
+    #         tvp_template_sim['target', k] = np.array([5, 5, 0, 0])
+    #     elif(temp > 30):
+    #         tvp_template_sim['target', k] = np.array([0, 0, 0, 0])
+        return tvp_template_sim
+simulator.set_tvp_fun(tvp_fun_sim)
 simulator.setup()
 estimator = do_mpc.estimator.StateFeedback(model)
 
@@ -171,6 +182,6 @@ def update(t_ind):
     mpc_graphics.plot_predictions(t_ind)
     mpc_graphics.reset_axes()
 
-anim = FuncAnimation(fig, update, frames=20, repeat=False)
+anim = FuncAnimation(fig, update, frames=5, repeat=False)
 gif_writer = ImageMagickWriter(fps=3)
 anim.save('anim.gif', writer=gif_writer)
