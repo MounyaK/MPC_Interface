@@ -229,3 +229,4 @@ gif_writer = ImageMagickWriter(fps=3)
 anim.save('anim.gif', writer=gif_writer)
 plt.show()
 
+SX.binary()

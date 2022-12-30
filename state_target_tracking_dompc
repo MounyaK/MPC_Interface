@@ -3,11 +3,15 @@ import do_mpc
 from casadi import *
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from matplotlib.animation import FuncAnimation, FFMpegWriter, ImageMagickWriter
+from matplotlib.animation import FuncAnimation, ImageMagickWriter, FFMpegFileWriter, FileMovieWriter
+import polytope as poly
+from matplotlib.patches import Polygon
+import pypoman
 
 model_type = 'discrete' # either 'discrete' or 'continuous'
 model = do_mpc.model.Model(model_type)
 
+# System
 A = np.array([  [1, 0, 0.5, 0], 
                 [0, 1, 0, 0.5], 
                 [0, 0, 1, 0], 
@@ -26,6 +30,22 @@ C = np.array([  [1, 0, 0, 0],
 
 D = np.zeros((2,2))
 
+# Obstacle
+Ax = np.array([ [-1, 0],
+                [1, 0], 
+                [0, -1], 
+                [0, 1]
+            ])
+
+bx = 0.4*np.ones((4,1))
+obs = poly.Polytope(Ax, bx)
+M = 1000
+vertices = pypoman.compute_polytope_vertices(Ax, bx)
+print(vertices[0][0])
+print(vertices)
+# poly = polytope.qhull(vertices) 
+
+# dimensions
 dx, du = np.shape(B)
 dy = np.size(C, 0)
 
@@ -45,37 +65,32 @@ R = 10
 
 # parameters
 x0 = np.array([2, 2, 0, 0, 1, 1])
-target = np.array([5, 5, 0, 0])
+# target = np.array([5, 5, 0, 0])
 
 # States struct (optimization variables):
 x = model.set_variable(var_type='_x', var_name='x', shape=(dx,1))
-target = model.set_variable(var_type='_tvp', var_name='target', shape=(dx,1))
 y = model.set_variable(var_type='_x', var_name='y', shape=(dy,1))
 # Input struct (optimization variables):
 u = model.set_variable(var_type='_u', var_name='u', shape=(du,1))
-# Set expression. These can be used in the cost function, as non-linear constraints
-# or just to monitor another output.
-# model.set_expression(expr_name='cost', expr=sum1(_x**2))
+# alpha = model.set_variable(var_type='_u', var_name='alpha', shape=(np.size(obs.A,0),1))
+# parameters
+target = model.set_variable(var_type='_tvp', var_name='target', shape=(dx,1))
 
+# simulator param
+Npred = 20;
+Nsim = 80;
 
 x_next = A@x + B@u
 y_next = C@x + D@u
-# target_next = target
 
 model.set_rhs('x', x_next)
 model.set_rhs('y', y_next)
-# model.set_rhs('target', target_next)
 
 model.setup()
 
 # set up mpc
 mpc = do_mpc.controller.MPC(model)
 
-mpc.scaling['_x', 'x'] = 5
-mpc.scaling['_x', 'y'] = 5
-mpc.scaling['_u', 'u'] = 5
-
-Npred = 10;
 # optimizer parameter
 setup_mpc = {
     'n_horizon': Npred,
@@ -87,26 +102,48 @@ mpc.set_param(**setup_mpc)
 # print(mtimes(mtimes(x.T,Q), x))
 mterm = mtimes(mtimes((x-target).T,Q), (x-target))
 lterm = mtimes(mtimes((x-target).T,P), (x-target))
-print(mterm)
-print(lterm)
+
 mpc.set_objective(mterm=mterm, lterm=lterm)
 
 mpc.set_rterm(
     u = R
 )
 
+# # Constraints
+# # Lower bounds on states:
+# mpc.bounds['lower','_x', 'x'] = -2*np.pi
+# mpc.bounds['lower','_x', 'y'] = -2*np.pi
+# # Upper bounds on states
+# mpc.bounds['upper','_x', 'x'] = 2*np.pi
+# mpc.bounds['upper','_x', 'y'] = 2*np.pi
+
+# Lower bounds on inputs:
+# mpc.bounds['lower','_u', 'u'] = -2*np.pi
+# mpc.bounds['lower','_u', 'alpha'] = -2*np.pi
+# mpc.bounds['lower','_u', 'alpha'] = 0
+# Upper bounds on inputs:
+# mpc.bounds['upper','_u', 'u'] = 2*np.pi
+# mpc.bounds['upper','_u', 'alpha'] = 2
+# mpc.set_nl_cons('obs_constr_1', -mtimes(obs.A,y) + obs.b - mtimes(M,alpha), ub=0)
+# mpc.set_nl_cons('obs_constr_2', sum1(alpha), ub=np.size(obs.A,0)-1)
+# mpc.set_nl_cons('obs_constr_3', , ub=1, soft_constraint=True)
+mpc.set_nl_cons('obs_constr_1', -sumsqr((x[:2]-SX([0,0]))**2), ub=-0.5)
+# mpc.set_nl_cons('obs_constr_2', -sqrt((x[:2]-vertices[1])**2), ub=-0.01)
+# mpc.set_nl_cons('obs_constr_3', -sqrt((x[:2]-vertices[2])**2), ub=-0.01)
+# mpc.set_nl_cons('obs_constr_4', -sqrt((x[:2]-vertices[3])**2), ub=-0.01)
+print(sumsqr((SX([0.2,0.3])-SX([0,0])**2)))
+
 tvp_template_mpc = mpc.get_tvp_template()
-print(tvp_template_mpc)
 
 def tvp_fun_mpc(t_now):
     for k in range(Npred+1):
         temp = t_now + k
         if temp <= 15:
-            tvp_template_mpc['_tvp', k, 'target'] = np.array([0, 0, 0, 0])
-        elif(15 < temp <=30):
             tvp_template_mpc['_tvp', k, 'target'] = np.array([5, 5, 0, 0])
+        elif(15 < temp <=30):
+            tvp_template_mpc['_tvp', k, 'target'] = np.array([-1, 0, 0, 0])
         elif(temp > 30):
-            tvp_template_mpc['_tvp', k, 'target'] = np.array([0, 0, 0, 0])
+            tvp_template_mpc['_tvp', k, 'target'] = np.array([5, 5, 0, 0])
     return tvp_template_mpc
 mpc.set_tvp_fun(tvp_fun_mpc)
 
@@ -119,14 +156,6 @@ simulator = do_mpc.simulator.Simulator(model)
 simulator.set_param(t_step = 0.1)
 tvp_template_sim = simulator.get_tvp_template()
 def tvp_fun_sim(t_now):
-    # for k in range(Npred+1):
-    #     temp = t_now + k
-    #     if temp <= 15:
-    #         tvp_template_sim['target', k] = np.array([0, 0, 0, 0])
-    #     elif(15 < temp <=30):
-    #         tvp_template_sim['target', k] = np.array([5, 5, 0, 0])
-    #     elif(temp > 30):
-    #         tvp_template_sim['target', k] = np.array([0, 0, 0, 0])
         return tvp_template_sim
 simulator.set_tvp_fun(tvp_fun_sim)
 simulator.setup()
@@ -140,48 +169,79 @@ mpc.set_initial_guess()
 
 # Setting up the Graphic
 # Customizing Matplotlib:
-mpl.rcParams['font.size'] = 18
-mpl.rcParams['lines.linewidth'] = 3
-mpl.rcParams['axes.grid'] = True
-# initializing the graphics module
-mpc_graphics = do_mpc.graphics.Graphics(mpc.data)
-sim_graphics = do_mpc.graphics.Graphics(simulator.data)
+# mpl.rcParams['font.size'] = 18
+# mpl.rcParams['lines.linewidth'] = 3
+# mpl.rcParams['axes.grid'] = True
+# # initializing the graphics module
+# mpc_graphics = do_mpc.graphics.Graphics(mpc.data)
+# sim_graphics = do_mpc.graphics.Graphics(simulator.data)
+
 # creating the figure
 # We just want to create the plot and not show it right now. This "inline magic" supresses the output.
 """
 Setup graphic:
 """
-
-fig, ax, graphics = do_mpc.graphics.default_plot(mpc.data)
-lines = sim_graphics.result_lines['_x', 'x']
-ax[0].legend(lines,'12',title='x')
-lines = sim_graphics.result_lines['_x', 'y']
-ax[1].legend(lines,'u',title='output')
-lines = sim_graphics.result_lines['_u', 'u']
-ax[2].legend(lines,'y',title='input')
 plt.ion()
 
 """
 Run MPC main loop:
 """
+usim = DM(np.zeros((du, Nsim)));
+ysim = DM(np.zeros((dy, Nsim+1)));
+xsim = DM(np.zeros((dx, Nsim+1)));
 
-for k in range(100):
+xsim[:, 0] = x0[:4]
+for k in range(Nsim):
     u0 = mpc.make_step(x0)
+    # u0[3:4] = to_binary(u0[3:4])
     y_next = simulator.make_step(u0)
     x0 = estimator.make_step(y_next)
+    
+    usim[:,k]   = u0
+    ysim[:,k]   = mtimes(C,x0[:4]) + mtimes(D,u0[:2])
+    xsim[:,k+1] = mtimes(A,x0[:4]) + mtimes(B,u0[:2])
 
-    graphics.plot_results(t_ind=k)
-    graphics.plot_predictions(t_ind=k)
-    graphics.reset_axes()
-    plt.show()
-    plt.pause(0.5)
+
+# Plot parameters
+fig, ax = plt.subplots(3, sharex=False, figsize=(16,9))
+fig.align_ylabels()
+
+ax[0].set_ylabel('x2')
+ax[0].set_xlabel('x1')
+ax[0].set_xlim(-float(np.amax(ysim[0,:].full())), float(np.amax(ysim[0,:].full())+1))
+ax[0].set_ylim(-float(np.amax(ysim[1,:].full())), float(np.amax(ysim[1,:].full())+1))
+
+ax[1].set_xlabel('time [s]')
+ax[1].set_ylabel('Vx(t)')
+ax[1].set_xlim(0.0, float(Nsim))
+ax[1].set_ylim(float(np.amin(xsim[2:].full())-1), float(np.amax(xsim[2,:].full())+1))
+
+ax[2].set_xlabel('time [s]')
+ax[2].set_ylabel('Vy(t)')
+ax[2].set_xlim(0.0, float(Nsim))
+ax[2].set_ylim(float(np.amin(xsim[3,:].full())-1), float(np.amax(xsim[3,:].full())+1))
+
+polygon = Polygon(vertices)
+ax[0].add_patch(polygon)
+ax[0].plot_polygon(vertices)
+for k in range(Nsim):
+    ax[0].scatter(ysim[0,k].full(), ysim[1,k].full(), color='blue') 
+    ax[1].stem(k, xsim[2,k].full(), '--', use_line_collection = True)
+    ax[2].stem(k, xsim[3,k].full(), '--', use_line_collection = True)
+    
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+
+plt.savefig('anim.jpg')
+plt.clf()
+
 
 # Animating Results
-def update(t_ind):
-    sim_graphics.plot_results(t_ind)
-    mpc_graphics.plot_predictions(t_ind)
-    mpc_graphics.reset_axes()
+def update(k):
+    ax[0].scatter(ysim[0,k].full(), ysim[1,k].full(), color='blue') 
+    ax[1].stem(k, xsim[2,k].full(), '--', use_line_collection = True)
+    ax[2].stem(k, xsim[3,k].full(), '--', use_line_collection = True)
 
-anim = FuncAnimation(fig, update, frames=5, repeat=False)
+anim = FuncAnimation(fig, update, frames=Nsim, repeat=False)
 gif_writer = ImageMagickWriter(fps=3)
 anim.save('anim.gif', writer=gif_writer)

@@ -29,6 +29,7 @@ MANIFEST
 # Project Files
 notes.py
 *.gif
+*.jpg
 .vscode
 .vscode/*
 
