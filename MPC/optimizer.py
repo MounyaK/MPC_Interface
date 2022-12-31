@@ -1,16 +1,18 @@
 import numpy as np
 import do_mpc
 from casadi import *
-from model import Model
+from MPC.model import Model
 import pypoman
+import polytope
 
-class optimizer:
+# TODO: make assert statements on attributes
+class Optimizer:
     # Simulation time
     Nsim = 100
     
     setup_mpc = {
     'n_horizon': 5,
-    't_step': 0.5,
+    't_step': 1,    # TODO: set position vector for every step
     'n_robust': 1,
     'store_full_solution': True,
     }
@@ -28,32 +30,48 @@ class optimizer:
     listOfObstacle = []
     
     # Trajectory
-    listOfPositions = [] # position = tuple (time, array)
+    listOfPositions = []    # position = tuple (time, array)
     
     def __init__(self, model:Model):
         
-        self.model = model
-        # set up mpc
-        self.mpc = do_mpc.controller.MPC(model)
+        try:
+            self.model = model
+            
+            # set up mpc
+            self.mpc = do_mpc.controller.MPC(self.model.model)
+            
+            # Set parameters
+            self.mpc.set_param(**self.setup_mpc)
+            
+            # Set tuning matrices
+            self.Q = np.eye(model.dx)
+            self.P = 10*self.Q
+            self.R = 10
+            
+            # default initial and target position
+            self.xinit = np.ones((self.model.dx, self.model.nb_agents))
+            self.listOfPositions.append((0, np.zeros((self.model.dx, self.model.nb_agents))))
         
-        # Set parameters
-        self.mpc.set_param(**self.setup_mpc)
+        except:
+            raise Exception("MPC.optimizer.__init__(): Error initializing optimizer. Check model instance")
+            
+    def setup(self):
+        try:
+            self.mpc.setup()
+        except:
+            return "MPC.optimizer.setup(): Error setting up optimizer. Did you run all the steps correctly?"
         
-        # Set tuning matrices
-        self.Q = np.array(model.dx)
-        self.P = 10*self.Q
-        self.R = 10
-        
-        self.xinit = np.zeros((self.model.dx, self.model.nb_agents))
-       
+        return 0
+    
     def setObstacleConstraints(self):
+        
         try:
             for i in range(len(self.listOfObstacle)):
                 poly = self.listOfObstacle[i]
-                center = self.__Centroid__(poly, pypoman.compute_polytope_vertices(poly.A, poly.B))
+                center = self.__Centroid__(pypoman.compute_polytope_vertices(poly.A, poly.b))
                 for j in range(self.model.nb_agents):
-                    y = self.model.var_y[j]
-                    limit = -abs(np.amax(poly.B)) + (5*abs(np.amax(poly.B)))/100 # A marge of max(radius)+5%
+                    y = self.model.model.x["y"+str(j)]
+                    limit = -abs(np.amax(poly.b)) + (5*abs(np.amax(poly.b)))/100 # A marge of max(radius)+5%
                     self.mpc.set_nl_cons('obs_'+str(i)+'_constr_'+str(j), -sumsqr((y-center)**2), ub=limit)
             
         except:
@@ -62,50 +80,71 @@ class optimizer:
         return 0
     
     def setTrajectory(self):
-        tvp_template_mpc = self.mpc.get_tvp_template()
-        Npred = self.setup_mpc['n_horizon']
-        positions = self.__createPositionsVector__()
-        # Set function which returns time-varying parameters
-        def tvp_fun_mpc(t_now):
-            positions
-            for k in range(Npred):
-                print(t_now+k)
-                tvp_template_mpc['_tvp', k, 'target'] = positions[int(t_now+k)]
-                    
-            return tvp_template_mpc
-        self.mpc.set_tvp_fun(tvp_fun_mpc)
+        try:
+            tvp_template_mpc = self.mpc.get_tvp_template()
+            Npred = self.setup_mpc['n_horizon']
+            positions = self.__createPositionsVector__()
+            
+            # Set function which returns time-varying parameters
+            def tvp_fun_mpc(t_now):
+                positions
+                for k in range(Npred):
+                    print(t_now+k)
+                    tvp_template_mpc['_tvp', k, 'target'] = positions[int(t_now+k)]
+                        
+                return tvp_template_mpc
+            self.mpc.set_tvp_fun(tvp_fun_mpc)
+            
+        except:
+            return "MPC.optimizer.setTrajectory(): Error setting up trajectory check positions vectors"
+        
+        return 0
     
     def __Centroid__(self, vertexes:list):
-        _x_list = [vertex [0] for vertex in vertexes]
-        _y_list = [vertex [1] for vertex in vertexes]
-        _len = len(vertexes)
-        _x = sum(_x_list) / _len
-        _y = sum(_y_list) / _len
+        try:
+            _x_list = [vertex [0] for vertex in vertexes]
+            _y_list = [vertex [1] for vertex in vertexes]
+            _len = len(vertexes)
+            _x = sum(_x_list) / _len
+            _y = sum(_y_list) / _len
+        
+        except:
+            return "MPC.optimizer.__Centroid__(): Error finding center of polyhedrons."
+        
         return [_x, _y]
     
     def __createPositionsVector__(self) -> list:
-        current_t = 0
-        next_t = self.listOfPositions[0][0]
-        lentgh = len(self.listOfPositions)
-        positions = []
-        
-        for i in range(lentgh):
-            positions += [self.listOfPositions[i][1] for x in range(current_t,next_t)]  
-              
-            if i == lentgh-1:
-                next_t = self.setup_mpc['n_horizon'] + self.Nsim
-            else:
-                next_t = self.listOfPositions[i+1][0] 
+        try:
+            current_t = 0
+            next_t = self.listOfPositions[0][0]
+            lentgh = len(self.listOfPositions)
+            positions = []
+            
+            for i in range(lentgh):
+                positions += [self.listOfPositions[i][1] for x in range(current_t,next_t)]  
                 
-            current_t = self.listOfPositions[i][0]
+                if i == lentgh-1:
+                    next_t = self.setup_mpc['n_horizon'] + self.Nsim
+                else:
+                    next_t = self.listOfPositions[i+1][0] 
+                    
+                current_t = self.listOfPositions[i][0]
+            
+            positions += [self.listOfPositions[i][1] for x in range(current_t,next_t)]     
         
-        positions += [self.listOfPositions[i][1] for x in range(current_t,next_t)]             
+        except:
+            return "MPC.optimizer.__createPositionsVector__(): Error creating position vector for trajectory. Check ListOfPositions attribute is set correctly"        
+        
         return positions 
     
     def setObjective(self):
+        
         try:
-            mterm = mtimes(mtimes((self.model.X-self.model.Target).T,self.Q), (self.model.X-self.model.Target))
-            lterm = mtimes(mtimes((self.model.X-self.model.Target).T,self.P), (self.model.X-self.model.Target))
+            mterm = 0
+            lterm = 0
+            for i in range(self.model.nb_agents):
+                mterm += mtimes(mtimes((self.model.model.x["x"+str(i)]-self.model.model.tvp["target"+str(i)]).T,self.Q), (self.model.model.x["x"+str(i)]-self.model.model.tvp["target"+str(i)]))
+                lterm += mtimes(mtimes((self.model.model.x["x"+str(i)]-self.model.model.tvp["target"+str(i)]).T,self.P), (self.model.model.x["x"+str(i)]-self.model.model.tvp["target"+str(i)]))
             self.mpc.set_objective(mterm=mterm, lterm=lterm)
             
         except:
