@@ -77,7 +77,7 @@ u = model.set_variable(var_type='_u', var_name='u', shape=(du,1))
 target = model.set_variable(var_type='_tvp', var_name='target', shape=(dx,1))
 
 # simulator param
-Npred = 20;
+Npred = 30;
 Nsim = 80;
 
 x_next = A@x + B@u
@@ -94,7 +94,7 @@ mpc = do_mpc.controller.MPC(model)
 # optimizer parameter
 setup_mpc = {
     'n_horizon': Npred,
-    't_step': 0.5,
+    't_step': 1,
     'n_robust': 1,
     'store_full_solution': True,
 }
@@ -135,15 +135,67 @@ print(sumsqr((SX([0.2,0.3])-SX([0,0])**2)))
 
 tvp_template_mpc = mpc.get_tvp_template()
 
+# def tvp_fun_mpc(t_now):
+#     for k in range(Npred+1):
+#         temp = t_now + k
+#         if temp <= 15:
+#             tvp_template_mpc['_tvp', k, 'target'] = np.array([5, 5, 0, 0])
+#         elif(15 < temp <=30):
+#             tvp_template_mpc['_tvp', k, 'target'] = np.array([-4, 0, 0, 0])
+#         elif(temp > 30):
+#             tvp_template_mpc['_tvp', k, 'target'] = np.array([1, 0, 0, 0])
+#     return tvp_template_mpc
+
+# positions = [(15,np.array([5, 5, 0, 0])), (30,np.array([-3, 0, 0, 0])), (50,np.array([4, 0, 0, 0])) ]    
+# current = 0    
+
+# def tvp_fun_mpc(t_now):
+#     global current
+#     next_position = positions[current]
+#     print("c= ", current)
+#     print("next_pos= ", next_position)
+#     if t_now == (next_position[0]-int(Npred/2)) and (current+1) < len(positions):
+#         current += 1
+#         next_position = positions[current]
+
+#     for k in range(Npred):
+#         temp = t_now + k
+#         if temp <= next_position[0]:
+#             tvp_template_mpc['_tvp', k, 'target'] = next_position[1]
+            
+#     return tvp_template_mpc
+  
+# positions = [np.array([5, 5, 0, 0]) for x in range(0,15)]   
+# positions += [np.array([-3, 0, 0, 0]) for x in range(15,50)]   
+# positions += [np.array([4, 1, 0, 0]) for x in range(50,Nsim+Npred)]   
+
+
+def createPositionsVector(listOfPositions) -> list:
+    current_t = 0
+    next_t = listOfPositions[0][0]
+    lentgh = len(listOfPositions)
+    positions = []
+    for i in range(lentgh):
+        positions += [listOfPositions[i][1] for x in range(current_t,next_t)]    
+        current_t = listOfPositions[i][0]
+        if i == lentgh-1:
+            next_t = Npred + Nsim
+        else:
+            next_t = listOfPositions[i+1][0]
+    positions += [listOfPositions[i][1] for x in range(current_t,next_t)]    
+    return positions
+
+list = [(15,np.array([5, 5, 0, 0])), (30,np.array([-3, 0, 0, 0])), (50,np.array([4, 1, 0, 0])) ] 
+positions = createPositionsVector(list)
+print(len(positions))
+print(positions)
+
 def tvp_fun_mpc(t_now):
-    for k in range(Npred+1):
-        temp = t_now + k
-        if temp <= 15:
-            tvp_template_mpc['_tvp', k, 'target'] = np.array([5, 5, 0, 0])
-        elif(15 < temp <=30):
-            tvp_template_mpc['_tvp', k, 'target'] = np.array([-1, 0, 0, 0])
-        elif(temp > 30):
-            tvp_template_mpc['_tvp', k, 'target'] = np.array([5, 5, 0, 0])
+    global positions
+    for k in range(Npred):
+        print(t_now+k)
+        tvp_template_mpc['_tvp', k, 'target'] = positions[int(t_now+k)]
+            
     return tvp_template_mpc
 mpc.set_tvp_fun(tvp_fun_mpc)
 
@@ -223,7 +275,7 @@ ax[2].set_ylim(float(np.amin(xsim[3,:].full())-1), float(np.amax(xsim[3,:].full(
 
 polygon = Polygon(vertices)
 ax[0].add_patch(polygon)
-ax[0].plot_polygon(vertices)
+# ax[0].plot_polygon(vertices)
 for k in range(Nsim):
     ax[0].scatter(ysim[0,k].full(), ysim[1,k].full(), color='blue') 
     ax[1].stem(k, xsim[2,k].full(), '--', use_line_collection = True)
