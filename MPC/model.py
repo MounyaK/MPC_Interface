@@ -9,7 +9,7 @@ class Model:
     """
         Setup MPC model:\n
         Number of Agents\n
-        System matrices: __A, __B, __C, __D\n
+        System matrices: A, B, C, D\n
         Matrices sizes:dx, du, dy\n
     """
     # Model Matrices
@@ -17,6 +17,7 @@ class Model:
     
     model_type = 'discrete' # either 'discrete' or 'continuous'
     model = do_mpc.model.Model(model_type)
+    
     # An = np.zeros(4)
     # Bn = np.zeros((4,2))
     # Cn = np.zeros((2,4))

@@ -127,7 +127,7 @@ mpc.set_rterm(
 # mpc.set_nl_cons('obs_constr_1', -mtimes(obs.A,y) + obs.b - mtimes(M,alpha), ub=0)
 # mpc.set_nl_cons('obs_constr_2', sum1(alpha), ub=np.size(obs.A,0)-1)
 # mpc.set_nl_cons('obs_constr_3', , ub=1, soft_constraint=True)
-mpc.set_nl_cons('obs_constr_1', -sumsqr((x[:2]-SX([0,0]))**2), ub=-0.5)
+mpc.set_nl_cons('obs_constr_1', -sumsqr((x[:2]-SX([0,0]))**2), ub=-0.404)
 # mpc.set_nl_cons('obs_constr_2', -sqrt((x[:2]-vertices[1])**2), ub=-0.01)
 # mpc.set_nl_cons('obs_constr_3', -sqrt((x[:2]-vertices[2])**2), ub=-0.01)
 # mpc.set_nl_cons('obs_constr_4', -sqrt((x[:2]-vertices[3])**2), ub=-0.01)
@@ -193,7 +193,7 @@ print(positions)
 def tvp_fun_mpc(t_now):
     global positions
     for k in range(Npred):
-        print(t_now+k)
+        # print(t_now+k)
         tvp_template_mpc['_tvp', k, 'target'] = positions[int(t_now+k)]
             
     return tvp_template_mpc
