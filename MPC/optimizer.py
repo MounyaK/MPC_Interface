@@ -32,6 +32,7 @@ class Optimizer:
     # Trajectory
     listOfPositions = []    # position = tuple (time, array)
     
+    
     def __init__(self, model:Model):
         
         try:
@@ -84,7 +85,7 @@ class Optimizer:
     def setTrajectory(self):
         tvp_template_mpc = self.mpc.get_tvp_template()
         Npred = self.__setup_mpc['n_horizon']
-        positions = self.__createPositionsVector__()
+        positions = self.createPositionsVector()
         
         # Set function which returns time-varying parameters
         def tvp_fun_mpc(t_now):
@@ -98,7 +99,7 @@ class Optimizer:
         # try:
         #     tvp_template_mpc = self.mpc.get_tvp_template()
         #     Npred = self.__setup_mpc['n_horizon']
-        #     positions = self.__createPositionsVector__()
+        #     positions = self.createPositionsVector()
             
         #     # Set function which returns time-varying parameters
         #     def tvp_fun_mpc(t_now):
@@ -127,7 +128,7 @@ class Optimizer:
         
         return [_x, _y]
     
-    def __createPositionsVector__(self) -> list:
+    def createPositionsVector(self) -> list:
         try:
             current_t = 0
             next_t = self.listOfPositions[0][0]
@@ -147,7 +148,7 @@ class Optimizer:
             positions += [self.listOfPositions[i][1] for x in range(current_t,next_t)]     
         
         except:
-            return "MPC.optimizer.__createPositionsVector__(): Error creating position vector for trajectory. Check ListOfPositions attribute is set correctly"        
+            return "MPC.optimizer.createPositionsVector(): Error creating position vector for trajectory. Check ListOfPositions attribute is set correctly"        
         
         return positions 
     

@@ -1,3 +1,4 @@
+import time
 from MPC.model import Model
 import numpy as np
 from MPC.optimizer import Optimizer
@@ -94,38 +95,42 @@ optimizer.setup()
 # optimizer.xinit = np.array([2,2,0,0,0,0])
 simulator = Simulator(optimizer)
 simulator.xinit = np.array([2, 2, 0, 0, 2, 2])
+# simulate
 res = simulator.launchSimulation()
+# show plot
+res =  simulator.show("Position")
+# plt.show()
+# print("finished")
+# plt.ion()
+# # Plot parameters
+# fig, ax = plt.subplots(3, sharex=False, figsize=(16,9))
+# fig.align_ylabels()
 
-plt.ion()
-# Plot parameters
-fig, ax = plt.subplots(3, sharex=False, figsize=(16,9))
-fig.align_ylabels()
+# ax[0].set_ylabel('x2')
+# ax[0].set_xlabel('x1')
+# ax[0].set_xlim(-float(np.amax(simulator.xsim[1:].full())), float(np.amax(simulator.xsim[1:].full())+1))
+# ax[0].set_ylim(-float(np.amax(simulator.xsim[2:].full())), float(np.amax(simulator.xsim[2:].full())+1))
 
-ax[0].set_ylabel('x2')
-ax[0].set_xlabel('x1')
-ax[0].set_xlim(-float(np.amax(simulator.xsim[1:].full())), float(np.amax(simulator.xsim[1:].full())+1))
-ax[0].set_ylim(-float(np.amax(simulator.xsim[2:].full())), float(np.amax(simulator.xsim[2:].full())+1))
+# ax[1].set_xlabel('time [s]')
+# ax[1].set_ylabel('Vx(t)')
+# ax[1].set_xlim(0.0, float(optimizer.Nsim))
+# ax[1].set_ylim(float(np.amin(simulator.xsim[2:].full())-1), float(np.amax(simulator.xsim[2,:].full())+1))
 
-ax[1].set_xlabel('time [s]')
-ax[1].set_ylabel('Vx(t)')
-ax[1].set_xlim(0.0, float(optimizer.Nsim))
-ax[1].set_ylim(float(np.amin(simulator.xsim[2:].full())-1), float(np.amax(simulator.xsim[2,:].full())+1))
+# ax[2].set_xlabel('time [s]')
+# ax[2].set_ylabel('Vy(t)')
+# ax[2].set_xlim(0.0, float(optimizer.Nsim))
+# ax[2].set_ylim(float(np.amin(simulator.xsim[3,:].full())-1), float(np.amax(simulator.xsim[3,:].full())+1))
 
-ax[2].set_xlabel('time [s]')
-ax[2].set_ylabel('Vy(t)')
-ax[2].set_xlim(0.0, float(optimizer.Nsim))
-ax[2].set_ylim(float(np.amin(simulator.xsim[3,:].full())-1), float(np.amax(simulator.xsim[3,:].full())+1))
+# polygon = Polygon(pypoman.compute_polytope_vertices(optimizer.listOfObstacle[0].A, optimizer.listOfObstacle[0].b))
+# ax[0].add_patch(polygon)
 
-polygon = Polygon(pypoman.compute_polytope_vertices(optimizer.listOfObstacle[0].A, optimizer.listOfObstacle[0].b))
-ax[0].add_patch(polygon)
-
-print(simulator.xsim)
-# ax[0].plot_polygon(vertices)
-for k in range(optimizer.Nsim):
-    print(simulator.xsim[:,k])
-    ax[0].scatter(simulator.xsim[0,k].full(), simulator.xsim[1,k].full(), color='blue') 
-    ax[1].stem(k, simulator.xsim[2,k].full(), '--', use_line_collection = True)
-    ax[2].stem(k, simulator.xsim[3,k].full(), '--', use_line_collection = True)
+# print(simulator.xsim)
+# # ax[0].plot_polygon(vertices)
+# for k in range(optimizer.Nsim):
+#     print(simulator.xsim[:,k])
+#     ax[0].scatter(simulator.xsim[0,k].full(), simulator.xsim[1,k].full(), color='blue') 
+#     ax[1].stem(k, simulator.xsim[2,k].full(), '--', use_line_collection = True)
+#     ax[2].stem(k, simulator.xsim[3,k].full(), '--', use_line_collection = True)
     
-    fig.canvas.draw()
-    fig.canvas.flush_events()
+#     fig.canvas.draw()
+#     fig.canvas.flush_events()
