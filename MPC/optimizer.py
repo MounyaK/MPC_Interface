@@ -54,7 +54,8 @@ class Optimizer:
             self.listOfPositions.append((0, np.zeros((self.model.dx, self.model.nb_agents))))
         
         except:
-            raise Exception("MPC.optimizer.__init__(): Error initializing optimizer. Check model instance")
+            e = sys.exc_info()[0]
+            raise Exception("MPC.optimizer.__init__():\n"+e)
             
     def setup(self):
         try:
@@ -74,12 +75,27 @@ class Optimizer:
                 for j in range(self.model.nb_agents):
                     x = self.model.model.x["x"+str(j)]
                     limit = -abs(np.amax(poly.b)) - (1*abs(np.amax(poly.b)))/100 # A marge of max(radius)+5%
-                    print(limit)
                     self.mpc.set_nl_cons('obs_'+str(i)+'_constr_'+str(j), -sumsqr((x[:self.model.dy]-SX(center))**2), ub=limit)
             
         except:
             return "MPC.optimizer.setObstacleConstraints(): Error setting obstacle constraints. Check polyhedrons or model"
         
+        return 0
+    
+    def setBoundsConstraints(self):
+        try:
+            
+            for i in range(self.model.nb_agents):
+                
+                self.mpc.bounds['lower','_u', "u"+str(i)] = self.umin
+                self.mpc.bounds['upper','_u', "u"+str(i)] = self.umax
+                self.mpc.bounds['lower','_x', "x"+str(i)] = self.xmin
+                self.mpc.bounds['upper','_x', "x"+str(i)] = self.xmax
+            
+        except:
+            e = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
+            raise Exception("MPC.optimizer.setBoundsConstraints():\n"+ str(e)) 
+            # return "MPC.optimizer.setBoundsConstraints(): Error setting obstacle constraints. Check polyhedrons or model" 
         return 0
     
     def setTrajectory(self):
@@ -157,10 +173,17 @@ class Optimizer:
         try:
             mterm = 0
             lterm = 0
+            rterm = {}
             for i in range(self.model.nb_agents):
                 mterm += mtimes(mtimes((self.model.model.x["x"+str(i)]-self.model.model.tvp["target"+str(i)]).T,self.Q), (self.model.model.x["x"+str(i)]-self.model.model.tvp["target"+str(i)]))
                 lterm += mtimes(mtimes((self.model.model.x["x"+str(i)]-self.model.model.tvp["target"+str(i)]).T,self.P), (self.model.model.x["x"+str(i)]-self.model.model.tvp["target"+str(i)]))
+                rterm["u"+str(i)] = self.R
+            
             self.mpc.set_objective(mterm=mterm, lterm=lterm)
+            self.mpc.set_rterm(
+             **rterm
+            )
+
             
         except:
             return "MPC.optimizer.setObjective(): Error setting Objective. Check model states, target or tuning matrices"

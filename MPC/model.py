@@ -15,8 +15,8 @@ class Model:
     # Model Matrices
     nb_agents = 1
     
-    model_type = 'discrete' # either 'discrete' or 'continuous'
-    model = do_mpc.model.Model(model_type)
+    # model_type = 'discrete' # either 'discrete' or 'continuous'
+    # model = do_mpc.model.Model(model_type)
     
     # An = np.zeros(4)
     # Bn = np.zeros((4,2))
@@ -34,7 +34,7 @@ class Model:
     
     # Optimizer variables
     __var_x = []
-    __var_y = []
+    # __var_y = []
     __var_u = []
     __var_target = []
     
@@ -44,9 +44,9 @@ class Model:
     Target = None
     
     
-    # def __init__(self):
-    #     model_type = 'discrete' # either 'discrete' or 'continuous'
-    #     self.model = do_mpc.model.Model(model_type)
+    def __init__(self):
+        model_type = 'discrete' # either 'discrete' or 'continuous'
+        self.model = do_mpc.model.Model(model_type)
 
     # def __setattr__(self, __name: str, __value: Any) -> None:
     #     if __name in ('X', 'Y', 'U', 'Target', '__var_x', '__var_y', '__var_u', '__var_target', '__A', '__B', '__C', '__D'):
@@ -76,12 +76,12 @@ class Model:
                 # Set symbolic name for variables
                 x_name = 'x' + str(i)
                 u_name = 'u' + str(i)
-                y_name = 'y' + str(i)
+                # y_name = 'y' + str(i)
                 target_name = 'target' + str(i)
                 
                 # States struct (optimization variables):
                 self.__var_x.append(self.model.set_variable(var_type='_x', var_name=x_name, shape=(self.dx,1)))
-                self.__var_y.append(self.model.set_variable(var_type='_x', var_name=y_name, shape=(self.dy,1)))
+                # self.__var_y.append(self.model.set_variable(var_type='_x', var_name=y_name, shape=(self.dy,1)))
                 # Input struct (optimization variables):
                 self.__var_u.append(self.model.set_variable(var_type='_u', var_name=u_name, shape=(self.du,1)))
                 # parameters
@@ -95,13 +95,17 @@ class Model:
     def setGlobalModelVariables(self):
         """setGlobalModelVariables(self) --> [X, Y, U, Target]"""
         try:
-            isNotSingleton = len(self.__var_x) > 1 and len(self.__var_y) > 1 and len(self.__var_u) > 1 and len(self.__var_target) > 1
+            # isNotSingleton = len(self.__var_x) > 1 and len(self.__var_y) > 1 and len(self.__var_u) > 1 and len(self.__var_target) > 1
+            isNotSingleton = len(self.__var_x) > 1 and len(self.__var_u) > 1 and len(self.__var_target) > 1
             if isNotSingleton:
-                self.X, self.Y, self.U, self.Target = [horzcat(*self.__var_x), horzcat(*self.__var_y), horzcat(*self.__var_u), horzcat(*self.__var_target)] 
+                # self.X, self.Y, self.U, self.Target = [horzcat(*self.__var_x), horzcat(*self.__var_y), horzcat(*self.__var_u), horzcat(*self.__var_target)] 
+                self.X, self.U, self.Target = [horzcat(*self.__var_x), horzcat(*self.__var_u), horzcat(*self.__var_target)] 
             else:
-                self.X, self.Y, self.U, self.Target = [self.__var_x[0], self.__var_y[0], self.__var_u[0], self.__var_target[0]]
+                # self.X, self.Y, self.U, self.Target = [self.__var_x[0], self.__var_y[0], self.__var_u[0], self.__var_target[0]]
+                self.X, self.U, self.Target = [self.__var_x[0], self.__var_u[0], self.__var_target[0]]
         except:
-            return "MPC.optimizerModel.setGlobalModelVariables(): Error setting modelVariables, check __var_x, __var_y, __var_u and __var_target"
+            # return "MPC.optimizerModel.setGlobalModelVariables(): Error setting modelVariables, check __var_x, __var_y, __var_u and __var_target"
+            return "MPC.optimizerModel.setGlobalModelVariables(): Error setting modelVariables, check __var_x,  __var_u and __var_target"
         return 0
     
     def setModelExpressions(self):
