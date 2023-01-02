@@ -80,6 +80,7 @@ class Simulator:
         return 0
     
     def show(self, _figname:str=None):
+        titles, data = self.getSimStruct()
         
         try:
             titles, data = self.getSimStruct()
@@ -89,7 +90,6 @@ class Simulator:
                 data = {_figname:data[_figname]}
                 titles = [_figname]
 
-            print(data)
             # Initialize figures
             nb_plot = len(data)
             fig = [None]*nb_plot

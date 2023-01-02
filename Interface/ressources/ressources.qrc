@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="rsrc">
+    <file>save.svg</file>
+    <file>add.svg</file>
+  </qresource>
+</RCC>
