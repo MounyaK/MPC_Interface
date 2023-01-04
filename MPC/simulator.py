@@ -62,7 +62,7 @@ class Simulator:
             self.optimizer.mpc.x0 = self.xinit
             
             self.optimizer.mpc.set_initial_guess()
-            A, B, C, D = self.optimizer.model.getAgentSystem()
+            A, B = self.optimizer.model.getAgentSystem()[:2]
             
             x0 = self.xinit
             
@@ -79,11 +79,10 @@ class Simulator:
             
         return 0
     
-    def show(self, _figname:str=None):
-        titles, data = self.getSimStruct()
-        
+    def show(self, _figname:str=None, _simStruct_path:str=None):
+    
         try:
-            titles, data = self.getSimStruct()
+            titles, data = self.getSimStruct(path=_simStruct_path)
         
             # To plot a particular figure in sim_struct else plot all figures
             if _figname is not None:
@@ -133,15 +132,17 @@ class Simulator:
                         
                 plt.show()                
         except:
-            e = str(sys.exc_info()[1])
+            e = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
             print("MPC.simulator.py.show():\n"+ str(e)) 
             
         return 0
      
-    def getSimStruct(self):
+    def getSimStruct(self, path:str=None):
         titles = []
         try:
             file = open(os.path.join(self.__location__, "sim_struct.json"))
+            if path is not None:
+                file = open(path)
             data = json.load(file)
             titles = list(data.keys())
             # Close opend file

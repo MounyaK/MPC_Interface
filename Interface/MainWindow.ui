@@ -13,6 +13,9 @@
   <property name="mouseTracking">
    <bool>true</bool>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -32,6 +35,9 @@ color: rgb(255, 255, 255);</string>
       <width>161</width>
       <height>22</height>
      </rect>
+    </property>
+    <property name="editable">
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QLabel" name="targets_label">
@@ -517,6 +523,9 @@ p, li { white-space: pre-wrap; }
        <height>22</height>
       </rect>
      </property>
+     <property name="editable">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QLabel" name="obstacles_label">
      <property name="geometry">
@@ -575,7 +584,8 @@ p, li { white-space: pre-wrap; }
      <string>Stop</string>
     </property>
     <property name="icon">
-     <iconset theme="add"/>
+     <iconset theme="add">
+      <normaloff>.</normaloff>.</iconset>
     </property>
    </widget>
    <widget class="QPushButton" name="pauseButton">
@@ -639,42 +649,91 @@ border-color: rgb(255, 255, 255);
      <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_Load">
+   <property name="styleSheet">
+    <string notr="true">selection-background-color: rgb(127, 172, 177);</string>
+   </property>
+   <widget class="QMenu" name="menuSettings">
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
     <property name="title">
      <string>&amp;Settings</string>
     </property>
-    <addaction name="action_Simulation_Structure"/>
+    <addaction name="actionSetSimulationStructure"/>
    </widget>
-   <widget class="QMenu" name="menu_Save">
-    <property name="title">
-     <string>&amp;Save</string>
+   <widget class="QMenu" name="menuFile">
+    <property name="acceptDrops">
+     <bool>false</bool>
     </property>
-    <addaction name="action_simulation_data"/>
-    <addaction name="actionoptimizer_structure"/>
-    <addaction name="action_figures"/>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <widget class="QMenu" name="menu_simulation_data">
+     <property name="title">
+      <string>&amp;save</string>
+     </property>
+     <addaction name="actionSaveOptimizerStructure"/>
+     <addaction name="actionSaveSimulationData"/>
+     <addaction name="actionSaveAnimation"/>
+    </widget>
+    <widget class="QMenu" name="menuLoad">
+     <property name="title">
+      <string>load</string>
+     </property>
+     <addaction name="actionLoadDefault"/>
+     <addaction name="actionLoadMpc"/>
+    </widget>
+    <addaction name="menu_simulation_data"/>
+    <addaction name="menuLoad"/>
    </widget>
-   <addaction name="menu_Save"/>
-   <addaction name="menu_Load"/>
+   <addaction name="menuFile"/>
+   <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="action_Simulation_Structure">
+  <action name="actionSetSimulationStructure">
    <property name="text">
     <string>&amp;Simulation Structure</string>
-   </property>
-  </action>
-  <action name="action_simulation_data">
-   <property name="text">
-    <string>&amp;simulation data</string>
-   </property>
-  </action>
-  <action name="actionoptimizer_structure">
-   <property name="text">
-    <string>optimizer structure</string>
    </property>
   </action>
   <action name="action_figures">
    <property name="text">
     <string>&amp;figures</string>
+   </property>
+  </action>
+  <action name="actionSaveOptimizerStructure">
+   <property name="text">
+    <string>&amp;optimizer structure</string>
+   </property>
+  </action>
+  <action name="actionSaveSimulationData">
+   <property name="text">
+    <string>&amp;simulation data</string>
+   </property>
+  </action>
+  <action name="actionSaveOptimizerStructure_2">
+   <property name="text">
+    <string>optimizer structure</string>
+   </property>
+  </action>
+  <action name="actionSaveAnimation">
+   <property name="text">
+    <string>animation</string>
+   </property>
+  </action>
+  <action name="actionLoadDefault">
+   <property name="text">
+    <string>example</string>
+   </property>
+  </action>
+  <action name="actionLoadMpc">
+   <property name="text">
+    <string>mpc</string>
    </property>
   </action>
  </widget>
