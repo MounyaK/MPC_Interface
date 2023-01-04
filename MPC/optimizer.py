@@ -54,8 +54,8 @@ class Optimizer:
             self.listOfPositions.append((0, np.zeros((self.model.dx, self.model.nb_agents))))
         
         except:
-            e = sys.exc_info()[0]
-            raise Exception("MPC.optimizer.__init__():\n"+e)
+            e = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
+            raise Exception("MPC.optimizer.__init__():\n"+str(e))
             
     def setup(self):
         try:
@@ -198,3 +198,6 @@ class Optimizer:
     def setHorizon(self, nb:int):
         self.__setup_mpc['n_horizon'] = nb
         self.mpc.set_param(**self.__setup_mpc)
+    
+    def getHorizon(self):
+        return self.__setup_mpc['n_horizon'] 
