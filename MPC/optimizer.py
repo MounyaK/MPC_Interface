@@ -68,15 +68,19 @@ class Optimizer:
     def setObstacleConstraints(self):
         
         try:
+            print("obstacles= ",self.listOfObstacle)
             for i in range(len(self.listOfObstacle)):
-                poly = self.listOfObstacle[i]
-                center = self.__Centroid__(pypoman.compute_polytope_vertices(poly.A, poly.b))
-                print(center)
+                vertices = self.listOfObstacle[i]
+                center = self.__Centroid__(vertices)
+                print("center = ",center)
                 for j in range(self.model.nb_agents):
                     x = self.model.model.x["x"+str(j)]
+                    poly =  polytope.qhull(np.array(vertices))
+                    print("Ax =", poly.A)
+                    print("bx =", poly.b)
                     limit = -abs(np.amax(poly.b)) - (1*abs(np.amax(poly.b)))/100 # A marge of max(radius)+5%
                     self.mpc.set_nl_cons('obs_'+str(i)+'_constr_'+str(j), -sumsqr((x[:self.model.dy]-SX(center))**2), ub=limit)
-            
+        
         except:
             return "MPC.optimizer.setObstacleConstraints(): Error setting obstacle constraints. Check polyhedrons or model"
         

@@ -2,5 +2,6 @@
   <qresource prefix="rsrc">
     <file>save.svg</file>
     <file>add.svg</file>
+    <file>del.svg</file>
   </qresource>
 </RCC>

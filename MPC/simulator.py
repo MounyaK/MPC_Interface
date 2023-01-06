@@ -55,6 +55,7 @@ class Simulator:
             raise Exception("MPC.simulator.py.__init__():\n"+ str(e)) 
     
     def launchSimulation(self):
+        
         try:
             # Initialize simulation
             self.simulator.x0 = self.xinit
@@ -112,9 +113,11 @@ class Simulator:
                 
                 # Set obstacle if there is
                 if config['has_obstacles']:
-                    for obs in self.optimizer.listOfObstacle:
-                        polygon = Polygon(pypoman.compute_polytope_vertices(obs.A, obs.b))
+                    obstacles = self.optimizer.listOfObstacle
+                    for x in range(len(obstacles)):
+                        polygon = Polygon(obstacles[x])
                         ax[i].add_patch(polygon)
+                        ax[i].annotate(str(x), xy=self.__Centroid__(obstacles[x]), ha='center', va='center')
                 
                 plt.grid()
                 # Plot at each step
@@ -172,3 +175,16 @@ class Simulator:
             print("MPC.simulator.py.__toVar__():\n"+ str(e)) 
             
         return var
+
+    def __Centroid__(self, vertexes:list):
+        try:
+            _x_list = [vertex [0] for vertex in vertexes]
+            _y_list = [vertex [1] for vertex in vertexes]
+            _len = len(vertexes)
+            _x = sum(_x_list) / _len
+            _y = sum(_y_list) / _len
+        
+        except:
+            return "MPC.simulator.__Centroid__(): Error finding center of polyhedrons."
+        
+        return [_x, _y]

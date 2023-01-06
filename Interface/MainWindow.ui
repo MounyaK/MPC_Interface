@@ -258,6 +258,9 @@ p, li { white-space: pre-wrap; }
        <height>21</height>
       </rect>
      </property>
+     <property name="acceptDrops">
+      <bool>false</bool>
+     </property>
      <property name="frameShape">
       <enum>QFrame::WinPanel</enum>
      </property>
@@ -517,7 +520,7 @@ p, li { white-space: pre-wrap; }
     <widget class="QComboBox" name="obstacles">
      <property name="geometry">
       <rect>
-       <x>170</x>
+       <x>100</x>
        <y>270</y>
        <width>171</width>
        <height>22</height>
@@ -530,7 +533,7 @@ p, li { white-space: pre-wrap; }
     <widget class="QLabel" name="obstacles_label">
      <property name="geometry">
       <rect>
-       <x>68</x>
+       <x>20</x>
        <y>270</y>
        <width>81</width>
        <height>21</height>
@@ -545,6 +548,52 @@ p, li { white-space: pre-wrap; }
      </property>
      <property name="text">
       <string>Obstacles</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="delObsButton">
+     <property name="geometry">
+      <rect>
+       <x>320</x>
+       <y>260</y>
+       <width>31</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="ressources/ressources.qrc">
+       <normaloff>:/rsrc/del.svg</normaloff>:/rsrc/del.svg</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="addObsButton">
+     <property name="geometry">
+      <rect>
+       <x>280</x>
+       <y>260</y>
+       <width>31</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="ressources/ressources.qrc">
+       <normaloff>:/rsrc/add.svg</normaloff>:/rsrc/add.svg</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
      </property>
     </widget>
    </widget>
@@ -627,6 +676,52 @@ border-color: rgb(255, 255, 255);
      <set>Qt::AlignJustify|Qt::AlignVCenter</set>
     </property>
    </widget>
+   <widget class="QPushButton" name="addTargetButton">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>390</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="ressources/ressources.qrc">
+      <normaloff>:/rsrc/add.svg</normaloff>:/rsrc/add.svg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>20</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="delTargetButton">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>390</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="ressources/ressources.qrc">
+      <normaloff>:/rsrc/del.svg</normaloff>:/rsrc/del.svg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>20</height>
+     </size>
+    </property>
+   </widget>
    <zorder>optimizer_group</zorder>
    <zorder>model_group</zorder>
    <zorder>targets</zorder>
@@ -639,6 +734,8 @@ border-color: rgb(255, 255, 255);
    <zorder>stopButton</zorder>
    <zorder>pauseButton</zorder>
    <zorder>progressBar</zorder>
+   <zorder>addTargetButton</zorder>
+   <zorder>delTargetButton</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

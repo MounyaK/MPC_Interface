@@ -31,9 +31,9 @@ C = np.array([  [1, 0, 0, 0],
 D = np.zeros((2,2))
 
 # Obstacle
-Ax = np.array([ [-1, 0],
+Ax = np.array([ [-1, -1],
                 [1, 0], 
-                [0, -1], 
+                [-1, -1], 
                 [0, 1]
             ])
 

@@ -68,7 +68,7 @@ Ax = np.array([ [-1, 0],
 
 bx = 0.4*np.ones((4,1))
 obs = poly.Polytope(Ax, bx)
-optimizer.listOfObstacle.append(obs)
+optimizer.listOfObstacle.append(pypoman.compute_polytope_vertices(obs.A, obs.b))
 print(optimizer.listOfObstacle)
 
 # Set constraints
@@ -78,12 +78,15 @@ optimizer.xmin = -10
 optimizer.xmax = 10
 
 res = optimizer.setObstacleConstraints()
+print(res)
 res = optimizer.setBoundsConstraints()
 # res = optimizer.set
 print(res)
 
 # Set Trajectory
-optimizer.listOfPositions = [(15,np.array([5, 5, 0, 0])), (30,np.array([-3, 0, 0, 0])), (50,np.array([4, 1, 0, 0])) ] 
+optimizer.listOfPositions = [(45,np.array([5, 5, 0, 0])), (30,np.array([-3, 0, 0, 0])), (50,np.array([4, 1, 0, 0])),(55,np.array([-2, 0, 0, 0])), (65,np.array([4, 0, 0, 0])) ] 
+optimizer.listOfPositions.sort()
+print("sorted targets= ",optimizer.listOfPositions)
 res = optimizer.setTrajectory()
 print(res)
 
@@ -97,8 +100,8 @@ simulator.xinit = np.array([2, 2, 0, 0])
 res = simulator.launchSimulation()
 # show plot
 res =  simulator.show("Position")
-res =  simulator.show("Vx(t)")
-res =  simulator.show("Vy(t)")
+# res =  simulator.show("Vx(t)")
+# res =  simulator.show("Vy(t)")
 
 # for k in range(optimizer.Nsim):
 #     print(simulator.xsim[:,k])
