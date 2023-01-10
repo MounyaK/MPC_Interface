@@ -18,9 +18,10 @@ class Simulator:
                     )
     
     def __init__(self, optimizer: Optimizer) -> None:
+        
         try:
             self.optimizer = optimizer
-            
+        
             # Set up simulator
             self.simulator = do_mpc.simulator.Simulator(optimizer.model.model)
             
@@ -38,17 +39,19 @@ class Simulator:
             self.estimator = do_mpc.estimator.StateFeedback(optimizer.model.model)
 
             # First state
-            self.xinit = np.ones((optimizer.model.dx + optimizer.model.dy, optimizer.model.nb_agents))
+            self.xinit = np.ones((optimizer.model.dx, optimizer.model.nb_agents))
             
             
             # Simulator results
             self.usim = DM(np.zeros((optimizer.model.du, optimizer.Nsim)));
             self.ysim = DM(np.zeros((optimizer.model.dy, optimizer.Nsim+1)));
             self.xsim = DM(np.zeros((optimizer.model.dx, optimizer.Nsim+1)));
-            self.targetsim = DM(optimizer.createPositionsVector())
+            # print(optimizer.createPositionsVector())
+            positions = optimizer.createPositionsVector()
+            if positions is not None:
+                self.targetsim = DM(positions)
             
-            self.xsim[:,0] = self.xinit[:optimizer.model.dx]
-            
+            self.xsim[:,0] = self.xinit
         except:
             e = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
             raise Exception("MPC.simulator.py.__init__():\n"+ str(e)) 

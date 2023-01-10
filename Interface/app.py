@@ -85,6 +85,7 @@ class MainWindow(QMainWindow):
         self.__setPlotList__()
         
     def onSetSysButton(self):
+        
         try:
             dlg = QFileDialog()
             # dlg.setLayout(QVBoxLayout()) #align content vertically
@@ -92,9 +93,16 @@ class MainWindow(QMainWindow):
             
             if fileName[0]:
                 print(fileName[0])
+                
+                # Setup structure
                 self.model = Model()
                 self.model.setAgentSystem(filepath=fileName[0])
                 self.ui.currentModel.setMarkdown(Path(fileName[0]).name) # Update current model ui 
+                self.model.setupModel()
+                self.optimizer = Optimizer(self.model); self.optimizer.Nsim = 100
+                self.simulator = Simulator(self.optimizer)
+                
+                self.__setPlotList__()
                 self.ui_message("Operation Succeeded")
         except:
             self.ui_message("Operation Failed", "Error")
@@ -124,6 +132,11 @@ class MainWindow(QMainWindow):
             self.ui.Horizon.setPlainText(str(self.optimizer.getHorizon()))
 
             """Set Objective"""
+            # Tuning matrices
+            self.ui.Q.setPlainText("1 1 1 1")
+            self.ui.P.setPlainText("1 1 1 1")
+            self.ui.R.setPlainText("10")
+            
             self.optimizer.setObjective()
             
             """Set Obstacle Constraints"""
@@ -309,8 +322,14 @@ class MainWindow(QMainWindow):
             self.optimizer.Nsim = int(self.ui.Nsim.toPlainText())
             
             self.optimizer.setHorizon(int(self.ui.Horizon.toPlainText()))
-
+            
             """Set Objective"""
+            # set tuning matrices
+            self.optimizer.Q = np.array([int(x) for x in split(" ", self.ui.Q.toPlainText())]) * np.eye(self.model.dx)
+            self.optimizer.P = np.array([int(x) for x in split(" ", self.ui.P.toPlainText())]) * np.eye(self.model.dx)
+            self.optimizer.R = int(self.ui.R.toPlainText())
+            
+            
             self.optimizer.setObjective()
             
             """Set Obstacle Constraints"""
@@ -319,15 +338,21 @@ class MainWindow(QMainWindow):
             self.ui.obstacles.clear()
             self.ui.obstacles.addItems(["obstacle_"+ str(x) for x in range(len(self.optimizer.listOfObstacle))])
             
-            self.optimizer.umin = int(self.ui.umin.toPlainText())
-            
-            self.optimizer.umax = int(self.ui.umax.toPlainText())
-            
-            self.optimizer.xmin = int(self.ui.xmin.toPlainText())
-            
-            self.optimizer.xmax = int(self.ui.xmax.toPlainText())
-
             self.optimizer.setObstacleConstraints()
+            
+            """set Bound Constraints"""
+            if self.ui.umin.toPlainText() != '':
+                self.optimizer.umin = int(self.ui.umin.toPlainText())
+                
+            if self.ui.umax.toPlainText() != '':
+                self.optimizer.umax = int(self.ui.umax.toPlainText())
+            
+            if self.ui.xmin.toPlainText() != '':
+                self.optimizer.xmin = int(self.ui.xmin.toPlainText())
+            
+            if self.ui.xmax.toPlainText() != '':
+                self.optimizer.xmax = int(self.ui.xmax.toPlainText())
+
             self.optimizer.setBoundsConstraints()
 
             # Set Trajectory
@@ -345,7 +370,7 @@ class MainWindow(QMainWindow):
             # self.ui_message("Initialized simulator with default system.", "Info")
             
         except:
-            self.ui_message("Error launching plot.", "Error")
+            self.ui_message("Error setting Optimizer.\nVerify Model or Opimizer Parameters", "Error")
             e = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
             raise Exception(e)
     
