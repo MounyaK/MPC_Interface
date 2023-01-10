@@ -4,10 +4,9 @@ import numpy as np
 import do_mpc
 from casadi import *
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.animation import FuncAnimation, ImageMagickWriter, FFMpegFileWriter, FileMovieWriter
 from matplotlib.patches import Polygon
-import pypoman
+from MPC.utils import centroid
+from cycler import cycler                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
 
 # TODO: make assert statements on attributes
 # TODO: function to update,add,delete figure config in sim_struct.json: add "figname":{info} to file setFig(*args). If fig name already exists update else create new entry
@@ -81,10 +80,10 @@ class Simulator:
         return 0
     
     def show(self, _figname:str=None, _simStruct_path:str=None):
-    
+        
         try:
             titles, data = self.getSimStruct(path=_simStruct_path)
-        
+            
             # To plot a particular figure in sim_struct else plot all figures
             if _figname is not None:
                 data = {_figname:data[_figname]}
@@ -117,23 +116,34 @@ class Simulator:
                     for x in range(len(obstacles)):
                         polygon = Polygon(obstacles[x])
                         ax[i].add_patch(polygon)
-                        ax[i].annotate(str(x), xy=self.__Centroid__(obstacles[x]), ha='center', va='center')
+                        ax[i].annotate(str(x), xy=centroid(obstacles[x]), ha='center', va='center')
                 
                 plt.grid()
                 # Plot at each step
                 for k in range(self.optimizer.Nsim):
                     # plot each variable
                     for j in range(len(config["variables"])):
-                        kwargs = {'color':config["colors"][j], 'marker':config["markers"][j], 'linestyle':config["linestyles"][j]}
-                        args = [self.__toVar__(vars[j])[x,k] for x in config["indexes"][j]] # set the variables to plot
-                        if len(args) == 1:
-                            args = [k] + args
+                        var = self.__toVar__(vars[j]) #get variable to plot
+                        
+                        if len(config["indexes"][j]) == 1:
+                            kwargs = {'linefmt': config["colors"][j], 'markerfmt': config["markers"][j]} 
+                            args = var[config["indexes"][j][0],k].full()
+                        
+                            ax[i].stem(k, args,**kwargs)
+                            ax[i].legend(config["variables"])
                             
-                        ax[i].plot(*args, **kwargs)
+                            
+                        else:
+                            kwargs = {'color': config["colors"][j], 'marker': config["markers"][j],'linestyle': config["linestyles"][j]} 
+                            args = [var[x, k] for x in config["indexes"][j] ]# set the variables to plot  
+                            
+                            ax[i].plot(*args, **kwargs)
+                            ax[i].legend(config["variables"])
+                            
                         fig[i].canvas.draw()
                         fig[i].canvas.flush_events()
                         
-                plt.show()                
+                plt.show()              
         except:
             e = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
             print("MPC.simulator.py.show():\n"+ str(e)) 
@@ -175,16 +185,3 @@ class Simulator:
             print("MPC.simulator.py.__toVar__():\n"+ str(e)) 
             
         return var
-
-    def __Centroid__(self, vertexes:list):
-        try:
-            _x_list = [vertex [0] for vertex in vertexes]
-            _y_list = [vertex [1] for vertex in vertexes]
-            _len = len(vertexes)
-            _x = sum(_x_list) / _len
-            _y = sum(_y_list) / _len
-        
-        except:
-            return "MPC.simulator.__Centroid__(): Error finding center of polyhedrons."
-        
-        return [_x, _y]

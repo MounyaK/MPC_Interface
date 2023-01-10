@@ -291,7 +291,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>160</x>
-       <y>230</y>
+       <y>260</y>
        <width>104</width>
        <height>21</height>
       </rect>
@@ -312,8 +312,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QPlainTextEdit" name="Horizon">
      <property name="geometry">
       <rect>
-       <x>100</x>
-       <y>60</y>
+       <x>190</x>
+       <y>50</y>
        <width>171</width>
        <height>21</height>
       </rect>
@@ -335,7 +335,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>200</y>
+       <y>230</y>
        <width>49</width>
        <height>16</height>
       </rect>
@@ -355,7 +355,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>160</x>
-       <y>200</y>
+       <y>230</y>
        <width>104</width>
        <height>21</height>
       </rect>
@@ -377,7 +377,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>160</x>
-       <y>170</y>
+       <y>200</y>
        <width>104</width>
        <height>21</height>
       </rect>
@@ -398,8 +398,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QLabel" name="constraints_label">
      <property name="geometry">
       <rect>
-       <x>100</x>
-       <y>100</y>
+       <x>40</x>
+       <y>120</y>
        <width>111</width>
        <height>31</height>
       </rect>
@@ -419,7 +419,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>170</y>
+       <y>200</y>
        <width>49</width>
        <height>16</height>
       </rect>
@@ -438,15 +438,15 @@ p, li { white-space: pre-wrap; }
     <widget class="QLabel" name="horizon_label">
      <property name="geometry">
       <rect>
-       <x>100</x>
-       <y>30</y>
-       <width>171</width>
+       <x>40</x>
+       <y>50</y>
+       <width>141</width>
        <height>21</height>
       </rect>
      </property>
      <property name="font">
       <font>
-       <pointsize>14</pointsize>
+       <pointsize>12</pointsize>
        <italic>true</italic>
        <bold>true</bold>
       </font>
@@ -459,7 +459,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>230</y>
+       <y>260</y>
        <width>49</width>
        <height>16</height>
       </rect>
@@ -479,7 +479,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>140</y>
+       <y>170</y>
        <width>49</width>
        <height>16</height>
       </rect>
@@ -499,7 +499,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>160</x>
-       <y>140</y>
+       <y>170</y>
        <width>104</width>
        <height>21</height>
       </rect>
@@ -521,7 +521,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>270</y>
+       <y>300</y>
        <width>171</width>
        <height>22</height>
       </rect>
@@ -534,7 +534,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>270</y>
+       <y>300</y>
        <width>81</width>
        <height>21</height>
       </rect>
@@ -554,7 +554,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>320</x>
-       <y>260</y>
+       <y>290</y>
        <width>31</width>
        <height>31</height>
       </rect>
@@ -577,7 +577,7 @@ p, li { white-space: pre-wrap; }
      <property name="geometry">
       <rect>
        <x>280</x>
-       <y>260</y>
+       <y>290</y>
        <width>31</width>
        <height>31</height>
       </rect>
@@ -594,6 +594,48 @@ p, li { white-space: pre-wrap; }
        <width>20</width>
        <height>20</height>
       </size>
+     </property>
+    </widget>
+    <widget class="QLabel" name="nsim_label">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>80</y>
+       <width>141</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <italic>true</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Simulation Length</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="Nsim">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>90</y>
+       <width>171</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::WinPanel</enum>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::AdjustToContents</enum>
      </property>
     </widget>
    </widget>

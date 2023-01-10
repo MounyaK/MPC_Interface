@@ -2,8 +2,8 @@ import numpy as np
 import do_mpc
 from casadi import *
 from MPC.model import Model
-import pypoman
 import polytope
+from MPC.utils import centroid
 
 # TODO: make assert statements on attributes
 class Optimizer:
@@ -66,20 +66,35 @@ class Optimizer:
         return 0
     
     def setObstacleConstraints(self):
-        
+        print("obstacles= ",self.listOfObstacle)
+        for i in range(len(self.listOfObstacle)):
+            vertices = self.listOfObstacle[i]
+            center = centroid(vertices)
+            max_dist = self.maxDistance(vertices, center)
+            print("center = ",center)
+            for j in range(self.model.nb_agents):
+                x = self.model.model.x["x"+str(j)]
+                poly =  polytope.qhull(np.array(vertices))
+                print("Ax =", poly.A)
+                print("bx =", poly.b)
+                limit = -max_dist #- (1*max_dist)/100 # A marge of max(radius)+5%
+                self.mpc.set_nl_cons('obs_'+str(i)+'_constr_'+str(j), -sqrt((x[0]-SX(center)[0])**2 + (x[1]-SX(center)[1])**2), ub=limit)
+            
         try:
-            print("obstacles= ",self.listOfObstacle)
-            for i in range(len(self.listOfObstacle)):
-                vertices = self.listOfObstacle[i]
-                center = self.__Centroid__(vertices)
-                print("center = ",center)
-                for j in range(self.model.nb_agents):
-                    x = self.model.model.x["x"+str(j)]
-                    poly =  polytope.qhull(np.array(vertices))
-                    print("Ax =", poly.A)
-                    print("bx =", poly.b)
-                    limit = -abs(np.amax(poly.b)) - (1*abs(np.amax(poly.b)))/100 # A marge of max(radius)+5%
-                    self.mpc.set_nl_cons('obs_'+str(i)+'_constr_'+str(j), -sumsqr((x[:self.model.dy]-SX(center))**2), ub=limit)
+            pass
+            # print("obstacles= ",self.listOfObstacle)
+            # for i in range(len(self.listOfObstacle)):
+            #     vertices = self.listOfObstacle[i]
+            #     center = centroid(vertices)
+            #     max_dist = self.maxDistance(vertices, center)
+            #     print("center = ",center)
+            #     for j in range(self.model.nb_agents):
+            #         x = self.model.model.x["x"+str(j)]
+            #         poly =  polytope.qhull(np.array(vertices))
+            #         print("Ax =", poly.A)
+            #         print("bx =", poly.b)
+            #         limit = -max_dist - (1*max_dist)/100 # A marge of max(radius)+5%
+            #         self.mpc.set_nl_cons('obs_'+str(i)+'_constr_'+str(j), -sqrt((self.model.model.x["x0"]-center[0])**2 - (self.model.model.x["x1"]-center[1])**2), ub=limit)
         
         except:
             return "MPC.optimizer.setObstacleConstraints(): Error setting obstacle constraints. Check polyhedrons or model"
@@ -106,6 +121,7 @@ class Optimizer:
         tvp_template_mpc = self.mpc.get_tvp_template()
         Npred = self.__setup_mpc['n_horizon']
         positions = self.createPositionsVector()
+        print("position= ", positions, "\nlength=", len(positions))
         
         # Set function which returns time-varying parameters
         def tvp_fun_mpc(t_now):
@@ -135,37 +151,40 @@ class Optimizer:
         
         return 0
     
-    def __Centroid__(self, vertexes:list):
+    def maxDistance(self, vertexes:list, centroid:list):
         try:
-            _x_list = [vertex [0] for vertex in vertexes]
-            _y_list = [vertex [1] for vertex in vertexes]
-            _len = len(vertexes)
-            _x = sum(_x_list) / _len
-            _y = sum(_y_list) / _len
+            max_dist = 0
+            for i in range(len(vertexes)):
+                dist = (abs(vertexes[i][0]-centroid[0])**2 + abs(vertexes[i][1]-centroid[1])**2)**0.5
+                if dist > max_dist:
+                    max_dist = dist
         
         except:
-            return "MPC.optimizer.__Centroid__(): Error finding center of polyhedrons."
+            return "MPC.optimizer.centroid(): Error finding center of polyhedrons."
         
-        return [_x, _y]
+        return max_dist
     
     def createPositionsVector(self) -> list:
+
         try:
-            current_t = 0
-            next_t = self.listOfPositions[0][0]
+            # create list of instant t at which the targets are supposed to be reached in function of the number of targets and Nsim
+            time = [x for x in range(0,self.Nsim, int(self.Nsim/len(self.listOfPositions)))]  
+            current_t = time[0]
+            next_t = time[1]
             lentgh = len(self.listOfPositions)
             positions = []
             
-            for i in range(lentgh):
-                positions += [self.listOfPositions[i][1] for x in range(current_t,next_t)]  
+            for i in range(1,lentgh):
+                positions += [self.listOfPositions[i] for x in range(current_t,next_t)]  
                 
                 if i == lentgh-1:
                     next_t = self.__setup_mpc['n_horizon'] + self.Nsim
                 else:
-                    next_t = self.listOfPositions[i+1][0] 
+                    next_t = time[i+1] 
                     
-                current_t = self.listOfPositions[i][0]
+                current_t = time[i]
             
-            positions += [self.listOfPositions[i][1] for x in range(current_t,next_t)]     
+            positions += [self.listOfPositions[i] for x in range(current_t,next_t)]     
         
         except:
             return "MPC.optimizer.createPositionsVector(): Error creating position vector for trajectory. Check ListOfPositions attribute is set correctly"        
