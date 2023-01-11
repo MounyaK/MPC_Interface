@@ -128,21 +128,47 @@ class Simulator:
                     for j in range(len(config["variables"])):
                         var = self.__toVar__(vars[j]) #get variable to plot
                         
+                        # Plot predictions asked
+                        if config["predictions"]:
+                            # plot the Npred first predictions
+                            if k == 0:
+                                xsim_index = config["variables"].index("xsim")
+                                args = [self.xsim[x, :self.optimizer.getHorizon()] for x in config["indexes"][xsim_index] ]
+                                if len(config["indexes"][xsim_index]) == 1 :
+                                    args = [k for s in range(self.optimizer.getHorizon())] + args
+                                ax[i].plot(*args, linestyle='', color='#c6c6c6', marker=config["markers"][xsim_index])
+                                ax[i].lines[-2].set_label("predictions")
+                            # add pred Npred + k for ret of simulation
+                            else:
+                                xsim_index = config["variables"].index("xsim")
+                                args = [self.xsim[x, self.optimizer.getHorizon() + k] for x in config["indexes"][xsim_index] ]
+                                if len(config["indexes"][xsim_index]) == 1 :
+                                    args = [k] + args
+                                ax[i].plot(*args, linestyle='', color='#c6c6c6', marker=config["markers"][xsim_index])                       
+
+                        # Plot f(t)=var
                         if len(config["indexes"][j]) == 1:
-                            kwargs = {'linefmt': config["colors"][j], 'markerfmt': config["markers"][j]} 
+                            kwargs = {'linefmt': config["colors"][j], 'markerfmt': config["markers"][j]}
+                            # Add var to legend once
+                            if k == 0:
+                                kwargs = {'linefmt': config["colors"][j], 'markerfmt': config["markers"][j], 'label':vars[j]} 
                             args = var[config["indexes"][j][0],k].full()
                         
                             ax[i].stem(k, args,**kwargs)
-                            ax[i].legend(config["variables"])
+                            ax[i].legend()
                             
-                            
+                        # Plot f(var[i])=var[j]   
                         else:
                             kwargs = {'color': config["colors"][j], 'marker': config["markers"][j],'linestyle': config["linestyles"][j]} 
+                            # Add var to legend once
+                            if k == 0:
+                                kwargs = {'color': config["colors"][j], 'marker': config["markers"][j],'linestyle': config["linestyles"][j], 'label':vars[j]} 
                             args = [var[x, k] for x in config["indexes"][j] ]# set the variables to plot  
                             
                             ax[i].plot(*args, **kwargs)
-                            ax[i].legend(config["variables"])
-                            
+                            ax[i].legend()
+                        
+                        # Draw figure real time 
                         fig[i].canvas.draw()
                         fig[i].canvas.flush_events()
                         

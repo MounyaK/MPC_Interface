@@ -1,17 +1,11 @@
 
-# from MPC.model import Model
 from pathlib import Path
 from re import split
-from Interface.ui_Graph import Ui_GraphDialog
-from Interface.ui_addElement import Ui_Dialog
 from MPC.model import Model
 from MPC.optimizer import Optimizer
 from MPC.simulator import Simulator
 from ui_MainWindow import Ui_MainWindow
 import sys
-from PyQt6.QtCore import QFileInfo
-from pyqtgraph import PlotWidget, plot
-import pyqtgraph as pg
 from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox, QFileDialog, QDialog
 from PyQt6 import QtGui
 import os
@@ -22,11 +16,9 @@ import polytope as poly
 from matplotlib.patches import Polygon
 import pypoman
 from MPC.utils import centroid
-from casadi import horzcat
 
-# Subclass QMainWindow to customize your application's main window
+# TODO: add try and catch
 class MainWindow(QMainWindow):
-    
     # MPC objects
     model     = None
     optimizer = None
@@ -297,21 +289,7 @@ class MainWindow(QMainWindow):
         self.optimizer.listOfObstacle.pop(index)
         # update ui
         self.ui.obstacles.clear()
-        self.ui.obstacles.addItems( "obstacle_"+str(x) for x in range(len(self.optimizer.listOfObstacle)) ) 
-        
-    
-    # def __inputToTarget__(self, input:str):
-    #     # transform string to list and elements to int
-    #         # input.replace(" ", "")
-    #         inputList = split(' ', input) 
-    #         inputList = [int(x) for x in inputList]
-        
-    #     # add to targets list
-    #         print([inputList[0], np.array(inputList[1:])])
-    #         self.optimizer.listOfPositions.append( (inputList[0], np.array(inputList[1:])) )
-    #         self.optimizer.listOfPositions.sort()
-    #         self.ui.targets.clear()
-    #         self.ui.targets.addItems(["t:"+str(x[0])+" x:"+str(x[1]) for x in self.optimizer.listOfPositions])          
+        self.ui.obstacles.addItems( "obstacle_"+str(x) for x in range(len(self.optimizer.listOfObstacle)) )         
 
     def __setOptimizer__(self):
         try:
@@ -394,9 +372,10 @@ class MainWindow(QMainWindow):
             ax.plot(self.optimizer.listOfPositions[i][x],self.optimizer.listOfPositions[i][y], 'r+')
             xpoint,ypoint = [self.optimizer.listOfPositions[i][x], self.optimizer.listOfPositions[i][y]]
             ax.annotate(str(i), xy=(xpoint,ypoint+0.1), ha='center', va='bottom')
-        
-app = QApplication(sys.argv)
 
+
+#Launch application 
+app = QApplication(sys.argv)
 window = MainWindow()
 window.show()
 
