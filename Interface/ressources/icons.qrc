@@ -1,7 +1,7 @@
 <RCC>
-  <qresource prefix="rsrc">
-    <file>save.svg</file>
+  <qresource prefix="icons">
     <file>add.svg</file>
     <file>del.svg</file>
+    <file>save.svg</file>
   </qresource>
 </RCC>

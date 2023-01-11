@@ -278,7 +278,7 @@ p, li { white-space: pre-wrap; }
    <widget class="QGroupBox" name="optimizer_group">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>400</x>
       <y>0</y>
       <width>371</width>
       <height>341</height>
@@ -290,9 +290,9 @@ p, li { white-space: pre-wrap; }
     <widget class="QPlainTextEdit" name="xmax">
      <property name="geometry">
       <rect>
-       <x>160</x>
-       <y>260</y>
-       <width>104</width>
+       <x>260</x>
+       <y>230</y>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
@@ -312,8 +312,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QPlainTextEdit" name="Horizon">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>50</y>
+       <x>170</x>
+       <y>30</y>
        <width>171</width>
        <height>21</height>
       </rect>
@@ -334,8 +334,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QLabel" name="xmin_label">
      <property name="geometry">
       <rect>
-       <x>100</x>
-       <y>230</y>
+       <x>200</x>
+       <y>200</y>
        <width>49</width>
        <height>16</height>
       </rect>
@@ -354,9 +354,9 @@ p, li { white-space: pre-wrap; }
     <widget class="QPlainTextEdit" name="xmin">
      <property name="geometry">
       <rect>
-       <x>160</x>
-       <y>230</y>
-       <width>104</width>
+       <x>260</x>
+       <y>200</y>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
@@ -376,9 +376,9 @@ p, li { white-space: pre-wrap; }
     <widget class="QPlainTextEdit" name="umax">
      <property name="geometry">
       <rect>
-       <x>160</x>
-       <y>200</y>
-       <width>104</width>
+       <x>260</x>
+       <y>170</y>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
@@ -398,15 +398,15 @@ p, li { white-space: pre-wrap; }
     <widget class="QLabel" name="constraints_label">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>120</y>
+       <x>200</x>
+       <y>100</y>
        <width>111</width>
        <height>31</height>
       </rect>
      </property>
      <property name="font">
       <font>
-       <pointsize>14</pointsize>
+       <pointsize>12</pointsize>
        <italic>true</italic>
        <bold>true</bold>
       </font>
@@ -418,8 +418,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QLabel" name="umax_label">
      <property name="geometry">
       <rect>
-       <x>100</x>
-       <y>200</y>
+       <x>200</x>
+       <y>170</y>
        <width>49</width>
        <height>16</height>
       </rect>
@@ -438,8 +438,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QLabel" name="horizon_label">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>50</y>
+       <x>20</x>
+       <y>30</y>
        <width>141</width>
        <height>21</height>
       </rect>
@@ -458,8 +458,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QLabel" name="xmax_label">
      <property name="geometry">
       <rect>
-       <x>100</x>
-       <y>260</y>
+       <x>200</x>
+       <y>230</y>
        <width>49</width>
        <height>16</height>
       </rect>
@@ -478,8 +478,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QLabel" name="umin_label">
      <property name="geometry">
       <rect>
-       <x>100</x>
-       <y>170</y>
+       <x>200</x>
+       <y>140</y>
        <width>49</width>
        <height>16</height>
       </rect>
@@ -498,9 +498,9 @@ p, li { white-space: pre-wrap; }
     <widget class="QPlainTextEdit" name="umin">
      <property name="geometry">
       <rect>
-       <x>160</x>
-       <y>170</y>
-       <width>104</width>
+       <x>260</x>
+       <y>140</y>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
@@ -563,8 +563,8 @@ p, li { white-space: pre-wrap; }
       <string/>
      </property>
      <property name="icon">
-      <iconset resource="ressources/ressources.qrc">
-       <normaloff>:/rsrc/del.svg</normaloff>:/rsrc/del.svg</iconset>
+      <iconset resource="ressources/icons.qrc">
+       <normaloff>:/icons/del.svg</normaloff>:/icons/del.svg</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -586,8 +586,8 @@ p, li { white-space: pre-wrap; }
       <string/>
      </property>
      <property name="icon">
-      <iconset resource="ressources/ressources.qrc">
-       <normaloff>:/rsrc/add.svg</normaloff>:/rsrc/add.svg</iconset>
+      <iconset resource="ressources/icons.qrc">
+       <normaloff>:/icons/add.svg</normaloff>:/icons/add.svg</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -599,8 +599,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QLabel" name="nsim_label">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>80</y>
+       <x>20</x>
+       <y>60</y>
        <width>141</width>
        <height>41</height>
       </rect>
@@ -619,8 +619,8 @@ p, li { white-space: pre-wrap; }
     <widget class="QPlainTextEdit" name="Nsim">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>90</y>
+       <x>170</x>
+       <y>70</y>
        <width>171</width>
        <height>21</height>
       </rect>
@@ -636,6 +636,165 @@ p, li { white-space: pre-wrap; }
      </property>
      <property name="sizeAdjustPolicy">
       <enum>QAbstractScrollArea::AdjustToContents</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_label">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>200</y>
+       <width>21</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <italic>true</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>R</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="P">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>170</y>
+       <width>104</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::WinPanel</enum>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::AdjustToContents</enum>
+     </property>
+    </widget>
+    <widget class="QLabel" name="P_label">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>170</y>
+       <width>21</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <italic>true</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>P</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="constraints_label_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>151</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <italic>true</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Tuning Matrices</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="Q_label">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>140</y>
+       <width>49</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+       <italic>true</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Q</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="Q">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>140</y>
+       <width>104</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::WinPanel</enum>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::AdjustToContents</enum>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="R">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>200</y>
+       <width>104</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::WinPanel</enum>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::AdjustToContents</enum>
+     </property>
+    </widget>
+    <widget class="Line" name="line">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>130</y>
+       <width>16</width>
+       <height>121</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
     </widget>
    </widget>
@@ -731,8 +890,8 @@ border-color: rgb(255, 255, 255);
      <string/>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>ressources/add.svg</normaloff>ressources/add.svg</iconset>
+     <iconset resource="ressources/icons.qrc">
+      <normaloff>:/icons/add.svg</normaloff>:/icons/add.svg</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -754,8 +913,8 @@ border-color: rgb(255, 255, 255);
      <string/>
     </property>
     <property name="icon">
-     <iconset resource="ressources/ressources.qrc">
-      <normaloff>:/rsrc/del.svg</normaloff>:/rsrc/del.svg</iconset>
+     <iconset resource="ressources/icons.qrc">
+      <normaloff>:/icons/del.svg</normaloff>:/icons/del.svg</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -877,7 +1036,7 @@ border-color: rgb(255, 255, 255);
   </action>
  </widget>
  <resources>
-  <include location="ressources/ressources.qrc"/>
+  <include location="ressources/icons.qrc"/>
  </resources>
  <connections/>
 </ui>
