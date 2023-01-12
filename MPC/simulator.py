@@ -137,7 +137,7 @@ class Simulator:
                                 if len(config["indexes"][xsim_index]) == 1 :
                                     args = [k for s in range(self.optimizer.getHorizon())] + args
                                 ax[i].plot(*args, linestyle='', color='#c6c6c6', marker=config["markers"][xsim_index])
-                                ax[i].lines[-2].set_label("predictions")
+                                # ax[i].lines[-2].set_label("predictions")
                             # add pred Npred + k for ret of simulation
                             else:
                                 xsim_index = config["variables"].index("xsim")

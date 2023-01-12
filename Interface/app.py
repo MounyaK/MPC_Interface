@@ -221,17 +221,9 @@ class MainWindow(QMainWindow):
         plt.show()
                       
     def onaddObsButtonClicked(self):
-        # coords = []
-        # callback funcs
         def onclick(event):
-            # global ix, iy, fig, ax
             ix, iy = event.xdata, event.ydata
             
-            # print 'x = %d, y = %d'%(
-            #     ix, iy)
-
-            # assign global variable to access outside of function
-            # global coords
             self.coords.append((ix, iy))
             ax.plot(ix, iy, 'b+')
             fig.canvas.draw()
@@ -281,6 +273,7 @@ class MainWindow(QMainWindow):
         # update ui
         self.ui.targets.clear()
         self.ui.targets.addItems(["target_"+str(x)for x in range(len(self.optimizer.listOfPositions)-1)])
+        
               
     def onDelObsButtonClicked(self):
         # get index of obstacle to delete
