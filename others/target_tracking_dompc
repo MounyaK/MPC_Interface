@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.animation import FuncAnimation, FFMpegWriter, ImageMagickWriter
 
-model_type = 'continuous' # either 'discrete' or 'continuous'
+model_type = 'discrete' # either 'discrete' or 'continuous'
 model = do_mpc.model.Model(model_type)
 
 # Model variables
