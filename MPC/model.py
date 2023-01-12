@@ -65,7 +65,7 @@ class Model:
         try:
             self.model.setup()
         except:
-            return "MPC.model.setupModel(): Error setting up model\nMPC.model.setAgentStruct(): "+str(res1)+ "\nMPC.model.setModelExpressions()"+ str(res2)+"\nMPC.model.setModelRhs(): "+str(res3)
+            raise Exception("MPC.model.setupModel(): Error setting up model\nMPC.model.setAgentStruct(): "+str(res1)+ "\nMPC.model.setModelExpressions()"+ str(res2)+"\nMPC.model.setModelRhs(): "+str(res3))
         
         return 0
         
@@ -122,13 +122,15 @@ class Model:
         return 0
     
     def setModelRhs(self):
+        
         try:
             for i in range(self.nb_agents):
                 self.model.set_rhs("x"+str(i), self.__A@self.model.x["x"+str(i)] + self.__B@self.model.u["u"+str(i)])
                 self.model.set_rhs("y"+str(i), self.__C@self.model.x["x"+str(i)] + self.__D@self.model.u["u"+str(i)])
             
         except:
-            return "MPC.optimizerModel.setModelRhs(): Error setting model rhs"
+            e = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
+            return "MPC.optimizerModel.setModelRhs()\n: "+ e
         
         return 0
   

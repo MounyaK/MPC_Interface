@@ -4,10 +4,9 @@ import numpy as np
 import do_mpc
 from casadi import *
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.animation import FuncAnimation, ImageMagickWriter, FFMpegFileWriter, FileMovieWriter
 from matplotlib.patches import Polygon
-import pypoman
+from MPC.utils import centroid
+from cycler import cycler                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
 
 # TODO: make assert statements on attributes
 # TODO: function to update,add,delete figure config in sim_struct.json: add "figname":{info} to file setFig(*args). If fig name already exists update else create new entry
@@ -19,9 +18,10 @@ class Simulator:
                     )
     
     def __init__(self, optimizer: Optimizer) -> None:
+        
         try:
             self.optimizer = optimizer
-            
+        
             # Set up simulator
             self.simulator = do_mpc.simulator.Simulator(optimizer.model.model)
             
@@ -39,22 +39,25 @@ class Simulator:
             self.estimator = do_mpc.estimator.StateFeedback(optimizer.model.model)
 
             # First state
-            self.xinit = np.ones((optimizer.model.dx + optimizer.model.dy, optimizer.model.nb_agents))
+            self.xinit = np.ones((optimizer.model.dx, optimizer.model.nb_agents))
             
             
             # Simulator results
             self.usim = DM(np.zeros((optimizer.model.du, optimizer.Nsim)));
             self.ysim = DM(np.zeros((optimizer.model.dy, optimizer.Nsim+1)));
             self.xsim = DM(np.zeros((optimizer.model.dx, optimizer.Nsim+1)));
-            self.targetsim = DM(optimizer.createPositionsVector())
+            # print(optimizer.createPositionsVector())
+            positions = optimizer.createPositionsVector()
+            if positions is not None:
+                self.targetsim = DM(positions)
             
-            self.xsim[:,0] = self.xinit[:optimizer.model.dx]
-            
+            self.xsim[:,0] = self.xinit
         except:
             e = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
             raise Exception("MPC.simulator.py.__init__():\n"+ str(e)) 
     
     def launchSimulation(self):
+        
         try:
             # Initialize simulation
             self.simulator.x0 = self.xinit
@@ -62,7 +65,7 @@ class Simulator:
             self.optimizer.mpc.x0 = self.xinit
             
             self.optimizer.mpc.set_initial_guess()
-            A, B, C, D = self.optimizer.model.getAgentSystem()
+            A, B = self.optimizer.model.getAgentSystem()[:2]
             
             x0 = self.xinit
             
@@ -79,17 +82,16 @@ class Simulator:
             
         return 0
     
-    def show(self, _figname:str=None):
+    def show(self, _figname:str=None, _simStruct_path:str=None):
         
         try:
-            titles, data = self.getSimStruct()
-        
+            titles, data = self.getSimStruct(path=_simStruct_path)
+            
             # To plot a particular figure in sim_struct else plot all figures
             if _figname is not None:
                 data = {_figname:data[_figname]}
                 titles = [_figname]
 
-            print(data)
             # Initialize figures
             nb_plot = len(data)
             fig = [None]*nb_plot
@@ -113,35 +115,76 @@ class Simulator:
                 
                 # Set obstacle if there is
                 if config['has_obstacles']:
-                    for obs in self.optimizer.listOfObstacle:
-                        polygon = Polygon(pypoman.compute_polytope_vertices(obs.A, obs.b))
+                    obstacles = self.optimizer.listOfObstacle
+                    for x in range(len(obstacles)):
+                        polygon = Polygon(obstacles[x])
                         ax[i].add_patch(polygon)
+                        ax[i].annotate(str(x), xy=centroid(obstacles[x]), ha='center', va='center')
                 
                 plt.grid()
                 # Plot at each step
                 for k in range(self.optimizer.Nsim):
                     # plot each variable
                     for j in range(len(config["variables"])):
-                        kwargs = {'color':config["colors"][j], 'marker':config["markers"][j], 'linestyle':config["linestyles"][j]}
-                        args = [self.__toVar__(vars[j])[x,k] for x in config["indexes"][j]] # set the variables to plot
-                        if len(args) == 1:
-                            args = [k] + args
+                        var = self.__toVar__(vars[j]) #get variable to plot
+                        
+                        # Plot predictions asked
+                        if config["predictions"]:
+                            # plot the Npred first predictions
+                            if k == 0:
+                                xsim_index = config["variables"].index("xsim")
+                                args = [self.xsim[x, :self.optimizer.getHorizon()] for x in config["indexes"][xsim_index] ]
+                                if len(config["indexes"][xsim_index]) == 1 :
+                                    args = [k for s in range(self.optimizer.getHorizon())] + args
+                                ax[i].plot(*args, linestyle='', color='#c6c6c6', marker=config["markers"][xsim_index])
+                                # ax[i].lines[-2].set_label("predictions")
+                            # add pred Npred + k for ret of simulation
+                            else:
+                                xsim_index = config["variables"].index("xsim")
+                                args = [self.xsim[x, self.optimizer.getHorizon() + k] for x in config["indexes"][xsim_index] ]
+                                if len(config["indexes"][xsim_index]) == 1 :
+                                    args = [k] + args
+                                ax[i].plot(*args, linestyle='', color='#c6c6c6', marker=config["markers"][xsim_index])                       
+
+                        # Plot f(t)=var
+                        if len(config["indexes"][j]) == 1:
+                            kwargs = {'linefmt': config["colors"][j], 'markerfmt': config["markers"][j]}
+                            # Add var to legend once
+                            if k == 0:
+                                kwargs = {'linefmt': config["colors"][j], 'markerfmt': config["markers"][j], 'label':vars[j]} 
+                            args = var[config["indexes"][j][0],k].full()
+                        
+                            ax[i].stem(k, args,**kwargs)
+                            ax[i].legend()
                             
-                        ax[i].plot(*args, **kwargs)
+                        # Plot f(var[i])=var[j]   
+                        else:
+                            kwargs = {'color': config["colors"][j], 'marker': config["markers"][j],'linestyle': config["linestyles"][j]} 
+                            # Add var to legend once
+                            if k == 0:
+                                kwargs = {'color': config["colors"][j], 'marker': config["markers"][j],'linestyle': config["linestyles"][j], 'label':vars[j]} 
+                            args = [var[x, k] for x in config["indexes"][j] ]# set the variables to plot  
+                            
+                            ax[i].plot(*args, **kwargs)
+                            ax[i].legend()
+                        
+                        # Draw figure real time 
                         fig[i].canvas.draw()
                         fig[i].canvas.flush_events()
                         
-                plt.show()                
+                plt.show()              
         except:
-            e = str(sys.exc_info()[1])
+            e = str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1])
             print("MPC.simulator.py.show():\n"+ str(e)) 
             
         return 0
      
-    def getSimStruct(self):
+    def getSimStruct(self, path:str=None):
         titles = []
         try:
             file = open(os.path.join(self.__location__, "sim_struct.json"))
+            if path is not None:
+                file = open(path)
             data = json.load(file)
             titles = list(data.keys())
             # Close opend file
